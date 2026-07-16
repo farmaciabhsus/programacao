@@ -570,7 +570,12 @@ translateY(2px) rotate(180deg); border-top-color:transparent; border-bottom-colo
     width:100%;
     border-collapse:separate;
     border-spacing:0;
-    min-width:2200px;
+    min-width:1680px;
+  }
+  /* Colunas de cálculo intermediário: saem da tabela principal e passam a
+  aparecer só dentro do painel "Memória de cálculo" (ƒx) de cada item, para
+  reduzir a rolagem horizontal necessária para ver os resultados. */
+  .col-detail{ display:none;
   }
   thead th{
     text-align:left;
@@ -1157,11 +1162,11 @@ tabindex="0" data-tip="Sugerido automaticamente a partir da quantidade
 
 necessária. Pode ser ajustado manualmente conforme diretriz do Ministério da
 Saúde.">i</span></div></th>
-            <th><div class="th-flex">Cobertura (meses)<span class="hint" tabindex="0" data-tip="Cobertura do período vigente calculada na primeira seção (Data Início a Data Fim de Cobertura).">i</span></div></th>
-            <th><div class="th-flex">Cobertura (dias)<span class="hint" tabindex="0" data-tip="Cobertura do período vigente, em dias corridos, calculada na primeira seção.">i</span></div></th>
-            <th><div class="th-flex">Quantitativo a consumir até o início da cobertura (un)<span class="hint" tabindex="0" data-tip="Consumo estimado mensal proporcional aos dias entre a data de análise e a data de início de cobertura.">i</span></div></th>
-            <th><div class="th-flex">quantitativo no estoque futuro (un)<span class="hint" tabindex="0" data-tip="Estoque disponível − a consumir até o início − reservado − vencimento próximo + a receber.">i</span></div></th>
-            <th><div class="th-flex">Quantitativo do estoque de segurança (un)<span class="hint" tabindex="0" data-tip="Consumo estimado × meses de cobertura × margem de segurança (%).">i</span></div></th>
+            <th class="col-detail"><div class="th-flex">Cobertura (meses)<span class="hint" tabindex="0" data-tip="Cobertura do período vigente calculada na primeira seção (Data Início a Data Fim de Cobertura).">i</span></div></th>
+            <th class="col-detail"><div class="th-flex">Cobertura (dias)<span class="hint" tabindex="0" data-tip="Cobertura do período vigente, em dias corridos, calculada na primeira seção.">i</span></div></th>
+            <th class="col-detail"><div class="th-flex">Quantitativo a consumir até o início da cobertura (un)<span class="hint" tabindex="0" data-tip="Consumo estimado mensal proporcional aos dias entre a data de análise e a data de início de cobertura.">i</span></div></th>
+            <th class="col-detail"><div class="th-flex">quantitativo no estoque futuro (un)<span class="hint" tabindex="0" data-tip="Estoque disponível − a consumir até o início − reservado − vencimento próximo + a receber.">i</span></div></th>
+            <th class="col-detail"><div class="th-flex">Quantitativo do estoque de segurança (un)<span class="hint" tabindex="0" data-tip="Consumo estimado × meses de cobertura × margem de segurança (%).">i</span></div></th>
             <th><div class="th-flex">Quantidade necessária (un)<span class="hint" tabindex="0" data-tip="(Consumo estimado × meses de cobertura) + estoque de segurança − estoque futuro.">i</span></div></th>
             <th><div class="th-flex">Quantitativo para a programação sugerida (ajuste à embalagem) (un)<span class="hint" tabindex="0" data-tip="Quantidade da programação já arredondada ao múltiplo da quantidade por embalagem.">i</span></div></th>
             <th><div class="th-flex">Quantidade excedente (un)<span class="hint" tabindex="0" data-tip="Calculado automaticamente: estoque futuro acima da quantidade necessária para o período. Indica possível excesso, com risco de vencimento.">i</span></div></th>
@@ -1589,11 +1594,11 @@ const items = [
         <input type="number" min="0" value="0" class="editable-final" data-key="${item.key}" data-col="programacao">
         <span class="override-badge hint" tabindex="0" data-badge-key="${item.key}" data-tip="Valor ajustado manualmente pelo farmacêutico — diferente do cálculo automático." style="display:none;">✎</span>
       </div></td>
-      <td class="result sem-meses">0</td>
-      <td class="result sem-dias">0</td>
-      <td class="result sem-aconsumir">0</td>
-      <td class="result sem-futuro">0</td>
-      <td class="result sem-seguranca">0</td>
+      <td class="result sem-meses col-detail">0</td>
+      <td class="result sem-dias col-detail">0</td>
+      <td class="result sem-aconsumir col-detail">0</td>
+      <td class="result sem-futuro col-detail">0</td>
+      <td class="result sem-seguranca col-detail">0</td>
       <td class="result sem-necessaria">0</td>
       <td class="result sem-sugerida">0</td>
       <td class="result sem-excedente">0</td>
