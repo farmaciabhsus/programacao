@@ -6,9 +6,9 @@
 <title>Calculadora de Programação · CBAF Diabetes</title>
 <style>
   :root{
-    --sage:#A8B98A;
-    --sage-dark:#7C9061;
-    --sage-deep:#5C6E45;
+    --sage:#AECB6B;
+    --sage-dark:#4FA98A;
+    --sage-deep:#2F6E5C;
     --ink:#2B3324;
     --ink-soft:#5A6350;
     --white:#FFFFFF;
@@ -18,6 +18,9 @@
     --border-soft:#E7ECDC;
     --amber:#B9852E;
     --amber-bg:#FBF3E3;
+    --calc-bg:#EBEBEB;
+    --calc-border:#D6D6D6;
+    --calc-ink:#5F5F5F;
     --radius-lg:18px;
     --radius-md:12px;
     --radius-sm:8px;
@@ -176,11 +179,11 @@ transparent 60%);
   .field input:focus, .field select:focus{
     outline:none;
     border-color:var(--sage-dark);
-    box-shadow:0 0 0 3px rgba(168,185,138,0.30);
+    box-shadow:0 0 0 3px rgba(79,169,138,0.30);
   }
   .field input:read-only{
-    background:var(--surface);
-    color:var(--ink-soft);
+    background:var(--calc-bg);
+    color:var(--calc-ink);
   }
   .field.invalid input{
     border-color:#B3261E;
@@ -408,6 +411,7 @@ translateY(2px) rotate(180deg); border-top-color:transparent; border-bottom-colo
     grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
     gap:14px;
     margin-top:18px;
+    margin-bottom:22px;
   }
   .stat{
     background:var(--surface);
@@ -431,10 +435,24 @@ translateY(2px) rotate(180deg); border-top-color:transparent; border-bottom-colo
   /* ---------- Search bar ---------- */
   .search-bar{
     display:flex;
-    align-items:center;
+    align-items:flex-start;
     flex-wrap:wrap;
-    gap:12px;
+    gap:20px;
     padding:16px 26px 0;
+  }
+  .search-field{
+    flex:1 1 300px;
+    min-width:260px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .search-field-meta{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    min-height:20px;
   }
   .link-btn{
     background:none;
@@ -449,7 +467,7 @@ translateY(2px) rotate(180deg); border-top-color:transparent; border-bottom-colo
   }
   .link-btn:hover{ color:#B3261E; }
   /* ---------- Adicionar item (autocomplete) ---------- */
-  .autocomplete{ position:relative; flex:1; min-width:220px; max-width:420px; }
+  .autocomplete{ position:relative; width:100%; }
   .autocomplete input{
     width:100%;
     font-family:var(--sans);
@@ -457,13 +475,13 @@ translateY(2px) rotate(180deg); border-top-color:transparent; border-bottom-colo
     padding:10px 14px;
     border:1.5px solid var(--border);
     border-radius:var(--radius-sm);
-    background:var(--surface);
+    background:var(--white);
     color:var(--ink);
   }
   .autocomplete input:focus{
     outline:none;
     border-color:var(--sage-dark);
-    box-shadow:0 0 0 3px rgba(168,185,138,0.30);
+    box-shadow:0 0 0 3px rgba(79,169,138,0.30);
     background:var(--white);
   }
   .autocomplete-panel{
@@ -525,21 +543,20 @@ translateY(2px) rotate(180deg); border-top-color:transparent; border-bottom-colo
     line-height:1.6;
   }
   .search-bar input[type="search"]{
-    flex:1;
-    max-width:380px;
+    width:100%;
     font-family:var(--sans);
     font-size:13.5px;
     padding:10px 14px;
     border:1.5px solid var(--border);
     border-radius:var(--radius-sm);
-    background:var(--surface);
+    background:var(--white);
     color:var(--ink);
   }
 
   .search-bar input[type="search"]:focus{
     outline:none;
     border-color:var(--sage-dark);
-    box-shadow:0 0 0 3px rgba(168,185,138,0.30);
+    box-shadow:0 0 0 3px rgba(79,169,138,0.30);
     background:var(--white);
   }
   .search-bar .count{
@@ -601,22 +618,23 @@ translateY(2px) rotate(180deg); border-top-color:transparent; border-bottom-colo
   td input:focus{
     outline:none;
     border-color:var(--sage-dark);
-    box-shadow:0 0 0 3px rgba(168,185,138,0.30);
+    box-shadow:0 0 0 3px rgba(79,169,138,0.30);
   }
   td input:read-only{
-    background:var(--surface);
-    color:var(--ink-soft);
+    background:var(--calc-bg);
+    color:var(--calc-ink);
+    border-color:var(--calc-border);
   }
   td input.editable-final{
     border-color:var(--sage-dark);
-    background:#F4F8EE;
+    background:var(--white);
     font-weight:700;
     color:var(--sage-deep);
   }
   td.result{
-    background:var(--surface-2);
+    background:var(--calc-bg);
     font-weight:700;
-    color:var(--sage-deep);
+    color:var(--calc-ink);
     text-align:right;
     font-family:var(--mono);
     font-size:14px;
@@ -733,7 +751,7 @@ translateY(2px) rotate(180deg); border-top-color:transparent; border-bottom-colo
   }
   .autosave-toggle input:checked ~ .toggle-track{ background:var(--sage-dark); }
   .autosave-toggle input:checked ~ .toggle-track .toggle-thumb{ transform:translateX(18px); }
-  .autosave-toggle input:focus-visible ~ .toggle-track{ box-shadow:0 0 0 3px rgba(168,185,138,0.45); }
+  .autosave-toggle input:focus-visible ~ .toggle-track{ box-shadow:0 0 0 3px rgba(79,169,138,0.45); }
   .autosave-text{ white-space:nowrap; }
   .autosave-text.saving{ color:var(--sage-deep); font-weight:600; }
   .autosave-text.error{ color:#B3261E; }
@@ -942,7 +960,7 @@ translateY(2px) rotate(180deg); border-top-color:transparent; border-bottom-colo
   <div class="top-inner">
     <div class="eyebrow"><span class="sus-mark">SUS</span> Sistema Único de
 Saúde</div>
-    <h1 class="title">Calculadora de programação do pedido de medicamentos</h1>
+    <h1 class="title">Calculadora de programação do pedido</h1>
     <p class="subtitle">Preencha os campos indicados para calcular
 automaticamente a quantidade sugerida de pedido de medicamentos e produtos, com
 base no estoque disponível e no consumo estimado.</p>
@@ -952,19 +970,18 @@ base no estoque disponível e no consumo estimado.</p>
   <div class="draft-banner" id="draftBanner">
     <div class="draft-banner-icon">↺</div>
     <div class="draft-banner-text">
-      <strong>Rascunho salvo automaticamente encontrado.</strong>
+      <strong>Rascunho salvo automaticamente restaurado.</strong>
       <span id="draftBannerInfo"></span>
     </div>
     <div class="draft-banner-actions">
-      <button type="button" class="ghost" id="btnDescartarRascunho">Descartar</button>
-      <button type="button" class="primary" id="btnRestaurarRascunho">Restaurar rascunho</button>
+      <button type="button" class="ghost" id="btnDescartarRascunho">Descartar e começar do zero</button>
+      <button type="button" class="primary" id="btnRestaurarRascunho" style="display:none;">Restaurar rascunho</button>
     </div>
   </div>
   <!-- ================= COBERTURA ================= -->
   <section class="card">
     <div class="card-head">
       <div>
-        <div class="label">Informações iniciais</div>
         <h2>Período de cobertura</h2>
       </div>
     </div>
@@ -1015,25 +1032,11 @@ id="timelineFill"></div></div>
           <span>Fim: <b id="lblFim">—</b></span>
         </div>
       </div>
-      <div class="stat-row">
-        <div class="stat">
-          <div class="num" id="statMeses">0</div>
-          <div class="cap">Cobertura (em meses)</div>
-        </div>
-        <div class="stat">
-          <div class="num" id="statDias">0</div>
-          <div class="cap">Cobertura (em dias)</div>
-        </div>
-        <div class="stat">
-          <div class="num" id="statDiasAteInicio">0</div>
-          <div class="cap">Dias entre a análise e o início</div>
-        </div>
-      </div>
       <div class="date-alert warn" id="coberturaAlert" style="display:none;">
         <span class="icon">!</span>
         <div>
           <strong>Período de cobertura não preenchido:</strong> a "Cobertura
-          (em meses)" está em 0, então a Qtd. necessária, a Programação
+          (em meses)" está em 0, então a Quantidade necessária, a Programação
           sugerida e o Resumo do pedido ficam zerados mesmo com Consumo
           estimado preenchido. Informe a <b>Data Início</b> e a
           <b>Data Fim de Cobertura</b> acima para os cálculos considerarem o
@@ -1057,36 +1060,56 @@ campo.">i</span> para ver a orientação oficial.</p>
       </div>
     </div>
     <div class="card-body" style="padding-bottom:0;">
+      <div class="stat-row">
+        <div class="stat">
+          <div class="num" id="statMeses">0</div>
+          <div class="cap">Cobertura (em meses)</div>
+        </div>
+        <div class="stat">
+          <div class="num" id="statDias">0</div>
+          <div class="cap">Cobertura (em dias)</div>
+        </div>
+        <div class="stat">
+          <div class="num" id="statDiasAteInicio">0</div>
+          <div class="cap">Dias entre a análise e o início</div>
+        </div>
+      </div>
       <div class="legend-row">
         <div class="legend-stat">
           <span class="dot red"></span>
-          <div><div class="num" id="semCountRed">0</div><div class="cap">Risco de desabastecimento</div></div>
+          <div><div class="num" id="semCountRed">0</div><div class="cap">Itens em risco de desabastecimento</div></div>
         </div>
         <div class="legend-stat">
           <span class="dot amber"></span>
-          <div><div class="num" id="semCountAmber">0</div><div class="cap">Excedente — avaliar devolução</div></div>
+          <div><div class="num" id="semCountAmber">0</div><div class="cap">Itens com estoque excedente</div></div>
         </div>
         <div class="legend-stat">
           <span class="dot green"></span>
-          <div><div class="num" id="semCountGreen">0</div><div class="cap">Adequado</div></div>
+          <div><div class="num" id="semCountGreen">0</div><div class="cap">Itens com estoque adequado</div></div>
         </div>
         <div class="legend-stat">
           <span class="dot gray"></span>
-          <div><div class="num" id="semCountGray">0</div><div class="cap">Sem dados preenchidos</div></div>
+          <div><div class="num" id="semCountGray">0</div><div class="cap">Itens sem dados preenchidos</div></div>
         </div>
       </div>
     </div>
     <div class="search-bar">
-      <div class="autocomplete">
-        <input type="text" id="itemAdicionar" placeholder="Buscar medicamento por nome ou código SIGAF para adicionar…" autocomplete="off">
-        <div class="autocomplete-panel" id="autocompletePanel"></div>
+      <div class="search-field">
+        <div class="autocomplete">
+          <input type="text" id="itemAdicionar" placeholder="Buscar medicamento por nome ou código SIGAF para adicionar…" autocomplete="off">
+          <div class="autocomplete-panel" id="autocompletePanel"></div>
+        </div>
+        <div class="search-field-meta">
+          <span class="count" id="contagemAdicionados">Nenhum item adicionado</span>
+          <button type="button" class="link-btn" id="btnLimparSelecao">Remover todos os itens</button>
+        </div>
       </div>
-      <span class="count" id="contagemAdicionados">Nenhum item adicionado</span>
-      <button type="button" class="link-btn" id="btnLimparSelecao">Remover todos os itens</button>
-    </div>
-    <div class="search-bar">
-      <input type="search" id="filtroSemaforo" placeholder="Filtrar itens já adicionados, por nome ou código SIGAF…">
-      <span class="count" id="contagemSemaforo"></span>
+      <div class="search-field">
+        <input type="search" id="filtroSemaforo" placeholder="Filtrar itens já adicionados, por nome ou código SIGAF…">
+        <div class="search-field-meta">
+          <span class="count" id="contagemSemaforo"></span>
+        </div>
+      </div>
     </div>
     <div class="table-scroll">
       <table id="tabelaI">
@@ -1095,7 +1118,7 @@ campo.">i</span> para ver a orientação oficial.</p>
             <th>Status</th>
             <th style="min-width:220px;">Medicamento / Produto</th>
             <th>Código SIGAF</th>
-            <th><div class="th-flex">Qtd. por embalagem<span class="hint" tabindex="0" data-tip="Quantidade por embalagem: quantidade de unidades farmacêuticas contida em cada
+            <th><div class="th-flex">Quantidade por embalagem<span class="hint" tabindex="0" data-tip="Quantidade por embalagem: quantidade de unidades farmacêuticas contida em cada
 embalagem do medicamento/produto no SIGAF. Confirme o valor correto para cada
 item — a programação sugerida será arredondada para múltiplos deste
 número.">i</span></div></th>
@@ -1140,7 +1163,7 @@ Saúde.">i</span></div></th>
             <th><div class="th-flex">A consumir até início de cobertura<span class="hint" tabindex="0" data-tip="Consumo estimado mensal proporcional aos dias entre a data de análise e a data de início de cobertura.">i</span></div></th>
             <th><div class="th-flex">Estoque futuro<span class="hint" tabindex="0" data-tip="Estoque disponível − a consumir até o início − reservado − vencimento próximo + a receber.">i</span></div></th>
             <th><div class="th-flex">Estoque de segurança<span class="hint" tabindex="0" data-tip="Consumo estimado × meses de cobertura × margem de segurança (%).">i</span></div></th>
-            <th><div class="th-flex">Qtd. necessária<span class="hint" tabindex="0" data-tip="(Consumo estimado × meses de cobertura) + estoque de segurança − estoque futuro.">i</span></div></th>
+            <th><div class="th-flex">Quantidade necessária<span class="hint" tabindex="0" data-tip="(Consumo estimado × meses de cobertura) + estoque de segurança − estoque futuro.">i</span></div></th>
             <th><div class="th-flex">Programação sugerida (ajuste à embalagem)<span class="hint" tabindex="0" data-tip="Quantidade da programação já arredondada ao múltiplo da quantidade por embalagem.">i</span></div></th>
             <th><div class="th-flex">Excedente<span class="hint" tabindex="0" data-tip="Calculado automaticamente: estoque futuro acima da quantidade necessária para o período. Indica possível excesso, com risco de vencimento.">i</span></div></th>
             <th style="width:44px;" title="Ver memória de cálculo">Memória</th>
@@ -1158,14 +1181,13 @@ para adicionar os medicamentos/produtos que serão programados.</td>
         </tbody>
       </table>
     </div>
-    <div class="foot-note">Todos os campos em destaque devem ser preenchidos
-para os itens adicionados, mesmo que o valor seja zero (0). Os valores de
+    <div class="foot-note">Os valores de
 estoque e consumo devem ser informados em unidades farmacêuticas (frascos ou
 carpules, conforme a apresentação). As colunas de semáforo são atualizadas
 automaticamente conforme os campos acima e o período de cobertura são
-preenchidos. Vermelho: estoque projetado insuficiente para o próximo mês de
-consumo. Amarelo: estoque projetado acima da quantidade necessária. Verde:
-situação adequada. Cinza: item ainda sem dados preenchidos. Clique no ícone
+preenchidos.<br>Vermelho: estoque projetado insuficiente para o próximo mês de
+consumo.<br>Amarelo: estoque projetado acima da quantidade necessária. Verde:
+situação adequada.<br>Cinza: item ainda sem dados preenchidos. Clique no ícone
 "ƒx" de cada item para conferir a memória de cálculo detalhada.</div>
   </section>
 
@@ -1175,10 +1197,7 @@ situação adequada. Cinza: item ainda sem dados preenchidos. Clique no ícone
       <div>
         <div class="label">Resumo final</div>
         <h2>Resumo do pedido — lançar no SIGAF</h2>
-        <p class="desc">Lista enxuta, só com Medicamento/Produto, Código SIGAF
-e Quantidade a Pedir (já arredondada à quantidade por embalagem). É exatamente o que
-o farmacêutico deve digitar no pedido do SIGAF — confira aqui antes de
-lançar.</p>
+        <p class="desc">Resumo para o pedido no SIGAF, verifique de lançar.</p>
       </div>
       <span class="count" id="resumoContagem"></span>
     </div>
@@ -1219,8 +1238,7 @@ tabela acima para vê-los aqui.</td>
 
 </main>
 
-<footer class="page">Calculadora de programação — <b>CBAF Diabetes</b> · Sistema
-Único de Saúde (SUS)</footer>
+<footer class="page">Sistema Único de Saúde (SUS)</footer>
 
 <script>
 (function(){
@@ -1606,7 +1624,7 @@ const items = [
       ['A consumir até início', `round(consumo ÷ 30 × dias até início) = round(${v.consumo} ÷ 30 × ${v.diasAteInicio}) = <b>${v.aConsumir}</b>`],
       ['Estoque futuro', `estoque − a consumir − reservado − vencimento + a receber = ${v.estoque} − ${v.aConsumir} − ${v.reservado} − ${v.vencimento} + ${v.receber} = <b>${v.futuro}</b>`],
       ['Estoque de segurança', `consumo × meses de cobertura × margem = ${v.consumo} × ${v.mesesCobertura.toFixed(2)} × ${(v.margem/100).toFixed(2)} = <b>${v.seguranca}</b>`],
-      ['Qtd. necessária', `(consumo × meses de cobertura) + segurança − futuro = (${v.consumo} × ${v.mesesCobertura.toFixed(2)}) + ${v.seguranca} − ${v.futuro} = <b>${v.necessaria}</b>`],
+      ['Quantidade necessária', `(consumo × meses de cobertura) + segurança − futuro = (${v.consumo} × ${v.mesesCobertura.toFixed(2)}) + ${v.seguranca} − ${v.futuro} = <b>${v.necessaria}</b>`],
       ['Programação (ajuste MS)', v.manual
         ? `valor ajustado manualmente pelo farmacêutico = <b>${v.programacao}</b>`
         : `= quantidade necessária = <b>${v.programacao}</b>`],
@@ -2132,25 +2150,25 @@ window.print());
     const temConteudo = saved && ((saved.items && saved.items.length) || saved.dataInicio || saved.dataFim);
     if(!temConteudo) return;
 
+    // Restaura o rascunho automaticamente ao carregar a página. Antes, o
+    // preenchimento salvo só era aplicado depois que o usuário clicava em
+    // "Restaurar rascunho" na faixa de aviso — se ela passasse despercebida,
+    // a página parecia estar em branco mesmo com dados salvos no navegador.
+    applyState(saved);
+
     const banner = document.getElementById('draftBanner');
     const info = document.getElementById('draftBannerInfo');
-    const btnRestaurar = document.getElementById('btnRestaurarRascunho');
     const btnDescartar = document.getElementById('btnDescartarRascunho');
-    if(!banner || !info || !btnRestaurar || !btnDescartar) return;
+    if(!banner || !info || !btnDescartar) return;
 
     const qtd = saved.items ? saved.items.length : 0;
-    info.textContent = `Salvo em ${new Date(saved.savedAt).toLocaleString('pt-BR')} — ${qtd} ${qtd===1 ? 'item preenchido' : 'itens preenchidos'}. Deseja continuar de onde parou?`;
+    info.textContent = `Salvo em ${new Date(saved.savedAt).toLocaleString('pt-BR')} — ${qtd} ${qtd===1 ? 'item preenchido' : 'itens preenchidos'}.`;
     banner.style.display = 'flex';
 
-    btnRestaurar.addEventListener('click', ()=>{
-      applyState(saved);
-      banner.style.display = 'none';
-      doSave();
-    }, {once:true});
-
     btnDescartar.addEventListener('click', ()=>{
+      if(!confirm('Tem certeza que deseja descartar o rascunho e começar do zero? Os dados preenchidos serão apagados.')) return;
       try{ window.localStorage.removeItem(AUTOSAVE_KEY); }catch(err){}
-      banner.style.display = 'none';
+      location.reload();
     }, {once:true});
   }
 
