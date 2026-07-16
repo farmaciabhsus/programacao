@@ -215,6 +215,12 @@ transparent 60%);
   }
   .date-alert ul{ margin:2px 0 0; padding-left:18px; }
   .date-alert li{ margin:2px 0; }
+  .date-alert.warn{
+    background:var(--amber-bg);
+    border:1px solid rgba(185,133,46,0.35);
+    color:#7A5A1E;
+  }
+  .date-alert.warn .icon{ background:var(--amber); }
   .prog-cell{
     display:flex;
     align-items:center;
@@ -810,11 +816,68 @@ translateY(2px) rotate(180deg); border-top-color:transparent; border-bottom-colo
     .coverage-wrap{ padding:18px; }
   }
   @media print{
+    @page{ size: A4 landscape; margin: 8mm; }
+
     body{ background:var(--white); }
     .actions{ display:none; }
     .draft-banner{ display:none !important; }
+    .search-bar{ display:none !important; }
     .card{ box-shadow:none; border:1px solid #ccc; }
-    .resumo-scroll{ max-height:none; overflow:visible; }
+
+    /* Corrige o corte de conteúdo: o wrapper da tabela (Parte I) tinha
+       overflow-x/overflow-y com rolagem, então só o trecho visível na tela
+       era impresso. Aqui liberamos a rolagem para que TODAS as colunas e
+       TODAS as linhas saiam no PDF/impressão. */
+    .table-scroll, .resumo-scroll{
+      max-height:none !important;
+      overflow:visible !important;
+    }
+
+    /* A tabela principal tinha min-width:2200px (pensada para tela com
+       rolagem horizontal). Em impressão isso faz colunas ficarem fora da
+       página. Deixamos a tabela se ajustar à largura do papel (paisagem)
+       e reduzimos fontes/paddings para caber o máximo de colunas possível. */
+    table{ min-width:0 !important; width:100% !important; table-layout:auto; }
+
+    thead th{
+      position:static;
+      font-size:7.5px;
+      padding:4px 3px;
+      white-space:normal;
+    }
+    thead th .th-flex{ max-width:none; }
+    tbody td{ font-size:7.5px; padding:3px 3px; }
+    tbody td.name{ max-width:none; }
+    td input{
+      width:100% !important;
+      min-width:0;
+      font-size:7.5px;
+      padding:2px 3px;
+      border:1px solid #bbb;
+      box-shadow:none !important;
+    }
+    td input.fe-input{ width:100% !important; }
+    td.result{ font-size:7.5px; }
+    .hint{ display:none; } /* ícones de ajuda só fazem sentido on-screen (hover) */
+
+    /* Colunas de ação (Memória / Remover item) não fazem sentido no papel;
+       ocultá-las libera espaço para as colunas com dados. */
+    #tabelaI thead th:nth-last-child(-n+2),
+    #tabelaI tbody td:nth-last-child(-n+2){ display:none !important; }
+
+    /* Evita que uma linha da tabela seja partida entre duas páginas e
+       garante que o cabeçalho se repita em cada página impressa. */
+    thead{ display:table-header-group; }
+    tbody tr{ page-break-inside:avoid; }
+
+    /* Preserva as cores de status (semáforo/badges) na impressão —
+       por padrão, a maioria das impressoras/gerador de PDF remove fundos
+       coloridos a menos que isso seja forçado. */
+    *{
+      -webkit-print-color-adjust:exact;
+      print-color-adjust:exact;
+      color-adjust:exact;
+    }
   }
   /* ---------- Resumo do pedido (lançamento no SIGAF) ---------- */
   .resumo-card{
@@ -964,6 +1027,17 @@ id="timelineFill"></div></div>
         <div class="stat">
           <div class="num" id="statDiasAteInicio">0</div>
           <div class="cap">Dias entre a análise e o início</div>
+        </div>
+      </div>
+      <div class="date-alert warn" id="coberturaAlert" style="display:none;">
+        <span class="icon">!</span>
+        <div>
+          <strong>Período de cobertura não preenchido:</strong> a "Cobertura
+          (em meses)" está em 0, então a Qtd. necessária, a Programação
+          sugerida e o Resumo do pedido ficam zerados mesmo com Consumo
+          estimado preenchido. Informe a <b>Data Início</b> e a
+          <b>Data Fim de Cobertura</b> acima para os cálculos considerarem o
+          consumo informado.
         </div>
       </div>
     </div>
@@ -1737,6 +1811,11 @@ mesesCobertura.toFixed(1) : '0';
     }
     document.getElementById('timelineFill').style.width = pct+'%';
 
+    const coberturaAlert = document.getElementById('coberturaAlert');
+    if(coberturaAlert){
+      coberturaAlert.style.display = (mesesCobertura===0 && selectedKeys.length>0) ? 'flex' : 'none';
+    }
+
     let semCountRed = 0, semCountAmber = 0, semCountGreen = 0, semCountGray = 0;
 
     selectedKeys.forEach(k=>{
@@ -2081,4 +2160,3 @@ window.print());
 </script>
 </body>
 </html>
-
