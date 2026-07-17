@@ -185,6 +185,27 @@ transparent 60%);
     background:var(--calc-bg);
     color:var(--calc-ink);
   }
+  /* Ênfase de tamanho para campos do estabelecimento */
+  .field-lg{ grid-column:span 2; }
+  .field-lg label{
+    font-size:14.5px;
+    font-weight:700;
+  }
+  .field-lg input{
+    font-size:18px;
+    font-weight:600;
+    padding:13px 15px;
+  }
+  .field-sm label{
+    font-size:11.5px;
+  }
+  .field-sm input{
+    font-size:12.5px;
+    padding:7px 10px;
+  }
+  @media (max-width:640px){
+    .field-lg{ grid-column:span 1; }
+  }
   .field.invalid input{
     border-color:#B3261E;
     box-shadow:0 0 0 3px rgba(179,38,30,0.12);
@@ -998,10 +1019,11 @@ translateY(2px) rotate(180deg); border-top-color:transparent; border-bottom-colo
   <div class="top-inner">
     <div class="eyebrow"><span class="sus-mark">SUS</span> Sistema Único de
 Saúde</div>
-    <h1 class="title">Calculadora de programação do pedido SIGAF</h1>
-    <p class="subtitle">Preencha os campos indicados para calcular
-automaticamente a quantidade sugerida de pedido de medicamentos e produtos, com
-base no estoque disponível e no consumo estimado.</p>
+    <h1 class="title">Monitoramento de estoque e cálculo de programação - SIGAF</h1>
+    <p class="subtitle">Mantenha os campos abaixo atualizados para que o sistema
+sinalize riscos de desabastecimento. Os indicadores calculam automaticamente a
+quantidade sugerida de pedido de medicamentos e produtos, com base no estoque
+disponível e no consumo estimado.</p>
   </div>
 </header>
 <main>
@@ -1025,7 +1047,7 @@ base no estoque disponível e no consumo estimado.</p>
     </div>
     <div class="coverage-wrap">
       <div class="date-grid">
-        <div class="field">
+        <div class="field field-sm">
           <label>CNES do estabelecimento
             <span class="hint" tabindex="0" data-tip="Informe o número do
 Cadastro Nacional de Estabelecimentos de Saúde (CNES), com 7 dígitos.">i</span>
@@ -1033,17 +1055,17 @@ Cadastro Nacional de Estabelecimentos de Saúde (CNES), com 7 dígitos.">i</span
           <input type="text" id="estabCnes" inputmode="numeric" maxlength="7" placeholder="0000000" autocomplete="off">
           <div class="field-error" id="estabCnesError">Informe um CNES válido, com 7 dígitos numéricos.</div>
         </div>
-        <div class="field">
+        <div class="field field-lg">
           <label>Nome completo do estabelecimento</label>
           <input type="text" id="estabNome" placeholder="Nome do estabelecimento de saúde" autocomplete="off">
           <div class="field-error" id="estabNomeError">Informe o nome completo do estabelecimento.</div>
         </div>
-        <div class="field">
+        <div class="field field-lg">
           <label>Nome completo do responsável</label>
           <input type="text" id="estabResponsavel" placeholder="Nome completo do responsável" autocomplete="off">
           <div class="field-error" id="estabResponsavelError">Informe o nome completo do responsável.</div>
         </div>
-        <div class="field">
+        <div class="field field-sm">
           <label>Email
             <span class="hint" tabindex="0" data-tip="Email de contato do
 responsável pela programação, para eventuais dúvidas ou retorno.">i</span>
@@ -1051,7 +1073,7 @@ responsável pela programação, para eventuais dúvidas ou retorno.">i</span>
           <input type="email" id="estabEmail" placeholder="nome@exemplo.com" autocomplete="off">
           <div class="field-error" id="estabEmailError">Informe um email válido (ex.: nome@exemplo.com).</div>
         </div>
-        <div class="field">
+        <div class="field field-sm">
           <label>Telefone
             <span class="hint" tabindex="0" data-tip="Informe o telefone com
 DDD entre parênteses, no formato (xx) xxxxx-xxxx.">i</span>
