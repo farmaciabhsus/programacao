@@ -689,6 +689,19 @@ translateY(2px) rotate(180deg); border-top-color:transparent; border-bottom-colo
     line-height:1;
   }
   .legend-stat .cap{ font-size:11.5px; color:var(--ink-soft); margin-top:3px; }
+  .legend-subtitle{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-size:12.5px;
+    font-weight:700;
+    letter-spacing:0.02em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    margin:4px 0 12px;
+    padding-top:10px;
+    border-top:1px dashed var(--border);
+  }
   .status-badge{
     display:inline-flex;
     align-items:center;
@@ -890,6 +903,18 @@ translateY(2px) rotate(180deg); border-top-color:transparent; border-bottom-colo
     td input.fe-input{ width:100% !important; }
     td.result{ font-size:7.5px; }
     .hint{ display:none; } /* ícones de ajuda só fazem sentido on-screen (hover) */
+
+    /* Compacta os selos dos dois indicadores (semáforo de ruptura e
+       suficiência do pedido) para que a coluna extra continue cabendo
+       na largura da página impressa/PDF. */
+    .status-badge{
+      font-size:7px;
+      padding:2px 6px 2px 5px;
+      gap:4px;
+      white-space:normal;
+    }
+    .status-badge .dot{ width:6px; height:6px; }
+    td.sem-status, td.sem-suficiencia{ min-width:0; }
 
     /* Colunas de ação (Memória / Remover item) não fazem sentido no papel;
        ocultá-las libera espaço para as colunas com dados. */
@@ -1150,6 +1175,21 @@ campo.">i</span> para ver a orientação oficial.</p>
           <div><div class="num" id="semCountGray">0</div><div class="cap">Itens sem dados preenchidos</div></div>
         </div>
       </div>
+      <p class="legend-subtitle">Suficiência do pedido <span class="hint" tabindex="0" data-tip="Indicador independente do semáforo de ruptura acima: compara a quantidade solicitada (programação sugerida, já ajustada à embalagem) com a quantidade necessária calculada para o período futuro de cobertura.">i</span></p>
+      <div class="legend-row">
+        <div class="legend-stat">
+          <span class="dot green"></span>
+          <div><div class="num" id="sufCountGreen">0</div><div class="cap">Itens com pedido suficiente</div></div>
+        </div>
+        <div class="legend-stat">
+          <span class="dot red"></span>
+          <div><div class="num" id="sufCountRed">0</div><div class="cap">Itens com pedido insuficiente</div></div>
+        </div>
+        <div class="legend-stat">
+          <span class="dot gray"></span>
+          <div><div class="num" id="sufCountGray">0</div><div class="cap">Itens sem dados preenchidos</div></div>
+        </div>
+      </div>
     </div>
     <div class="search-bar">
       <div class="search-field">
@@ -1174,6 +1214,7 @@ campo.">i</span> para ver a orientação oficial.</p>
         <thead>
           <tr>
             <th>Status</th>
+            <th><div class="th-flex">Suficiência do pedido<span class="hint" tabindex="0" data-tip="Indicador independente do semáforo de ruptura: fica verde quando a quantidade solicitada (programação sugerida) é suficiente para cobrir a necessidade calculada do período futuro; fica vermelho quando fica abaixo dela.">i</span></div></th>
             <th style="min-width:220px;">item(ns)</th>
             <th>Código SIGAF</th>
             <th><div class="th-flex">Quantidade por embalagem (un)<span class="hint" tabindex="0" data-tip="Quantidade por embalagem: quantidade de unidades farmacêuticas contida em cada
@@ -1230,11 +1271,11 @@ Saúde.">i</span></div></th>
         </thead>
         <tbody id="tbodyI">
           <tr id="emptyRowI" class="empty-row">
-            <td colspan="21">Nenhum item adicionado ainda. Use a busca acima
+            <td colspan="22">Nenhum item adicionado ainda. Use a busca acima
 para adicionar os medicamentos/produtos que serão programados.</td>
           </tr>
           <tr id="noMatchRowI" class="empty-row" style="display:none;">
-            <td colspan="21">Nenhum item encontrado para esta busca.</td>
+            <td colspan="22">Nenhum item encontrado para esta busca.</td>
           </tr>
         </tbody>
       </table>
@@ -1636,6 +1677,7 @@ const items = [
     tr.dataset.key = item.key;
     tr.innerHTML = `
       <td class="sem-status"><span class="status-badge gray"><span class="dot"></span>Sem dados</span></td>
+      <td class="sem-suficiencia"><span class="status-badge gray"><span class="dot"></span>Sem dados</span></td>
       <td class="name">${item.name}</td>
       <td class="code">${item.code}</td>
       <td><input type="number" min="1" value="${item.fe}" class="fe-input" data-key="${item.key}" data-col="fe"></td>
@@ -1668,7 +1710,7 @@ const items = [
     memoTr.className = 'calc-memo-row';
     memoTr.dataset.memoRowKey = item.key;
     memoTr.style.display = 'none';
-    memoTr.innerHTML = `<td colspan="21"><div class="calc-memo" data-memo-content-key="${item.key}">
+    memoTr.innerHTML = `<td colspan="22"><div class="calc-memo" data-memo-content-key="${item.key}">
       <div class="memo-title">Memória de cálculo — ${item.name}</div>
       <dl></dl>
     </div></td>`;
@@ -1689,6 +1731,7 @@ const items = [
         : `= quantidade necessária = <b>${v.programacao}</b>`],
       ['Programação sugerida', `ceil(programação ÷ qtd. por embalagem) × qtd. por embalagem = ceil(${v.programacao} ÷ ${v.fe}) × ${v.fe} = <b>${v.sugerida}</b>`],
       ['Excedente', `max(futuro − necessária, 0) = max(${v.futuro} − ${v.necessaria}, 0) = <b>${v.excedente}</b>`],
+      ['Suficiência do pedido', `programação sugerida ≥ quantidade necessária? ${v.sugerida} ≥ ${v.necessaria} → <b>${v.sugerida >= v.necessaria ? 'pedido suficiente' : 'pedido insuficiente'}</b>`],
     ];
     content.innerHTML = linhas.map(([dt,dd])=> `<dt>${dt}</dt><dd>${dd}</dd>`).join('');
   }
@@ -1970,6 +2013,7 @@ mesesCobertura.toFixed(1) : '0';
     }
 
     let semCountRed = 0, semCountAmber = 0, semCountGreen = 0, semCountGray = 0;
+    let sufCountGreen = 0, sufCountRed = 0, sufCountGray = 0;
 
     selectedKeys.forEach(k=>{
 
@@ -2036,6 +2080,25 @@ receber, 0);
         setText(semRow.querySelector('.sem-necessaria'), necessaria);
         setText(semRow.querySelector('.sem-sugerida'), sugerida);
         setText(semRow.querySelector('.sem-excedente'), excedente);
+
+        // ---- Suficiência do pedido (indicador independente do semáforo de ruptura) ----
+        // Compara a quantidade solicitada (programação sugerida, já ajustada à
+        // embalagem) com a quantidade necessária calculada para o período futuro.
+        let sufStatus, sufLabel;
+        if(semNoData){
+          sufStatus = 'gray'; sufLabel = 'Sem dados';
+          sufCountGray++;
+        } else if(sugerida >= necessaria){
+          sufStatus = 'green'; sufLabel = 'Pedido suficiente';
+          sufCountGreen++;
+        } else {
+          sufStatus = 'red'; sufLabel = 'Pedido insuficiente';
+          sufCountRed++;
+        }
+        const sufCell = semRow.querySelector('.sem-suficiencia');
+        if(sufCell){
+          sufCell.innerHTML = `<span class="status-badge ${sufStatus}"><span class="dot"></span>${sufLabel}</span>`;
+        }
       }
 
       renderMemo(k, {
@@ -2050,6 +2113,9 @@ receber, 0);
     document.getElementById('semCountAmber').textContent = semCountAmber;
     document.getElementById('semCountGreen').textContent = semCountGreen;
     document.getElementById('semCountGray').textContent = semCountGray;
+    document.getElementById('sufCountGreen').textContent = sufCountGreen;
+    document.getElementById('sufCountRed').textContent = sufCountRed;
+    document.getElementById('sufCountGray').textContent = sufCountGray;
 
     aplicarFiltroSemaforo();
     renderResumoPedido();
@@ -2124,7 +2190,7 @@ window.print());
     }
 
     const cabecalho = [
-      'Status','Item','Código SIGAF','Quantidade por embalagem (un)',
+      'Status','Suficiência do pedido','Item','Código SIGAF','Quantidade por embalagem (un)',
       'Consumo estimado no mês (un)','Estoque disponível (un)',
       'Reservado para outros programas (un)','Vencimento próximo (un)',
       'A receber (un)','Margem de segurança (%)','Programação de ajuste (un)',
@@ -2147,11 +2213,14 @@ window.print());
         const td = tr.querySelector(`td.${cls}`);
         return td ? td.textContent.trim() : '';
       };
-      const badge = tr.querySelector('.status-badge');
+      const badge = tr.querySelector('.sem-status .status-badge');
       const status = badge ? badge.textContent.trim() : '';
+      const sufBadge = tr.querySelector('.sem-suficiencia .status-badge');
+      const suficiencia = sufBadge ? sufBadge.textContent.trim() : '';
 
       linhas.push([
         status,
+        suficiencia,
         item ? item.name : '',
         item ? item.code : '',
         getVal('fe'),
