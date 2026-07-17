@@ -189,6 +189,14 @@ transparent 60%);
     border-color:#B3261E;
     box-shadow:0 0 0 3px rgba(179,38,30,0.12);
   }
+  .field-error{
+    display:none;
+    margin-top:6px;
+    font-size:12px;
+    color:#B3261E;
+    line-height:1.4;
+  }
+  .field.invalid .field-error{ display:block; }
   .date-alert{
     display:flex;
     align-items:flex-start;
@@ -983,6 +991,52 @@ base no estoque disponível e no consumo estimado.</p>
       <button type="button" class="primary" id="btnRestaurarRascunho" style="display:none;">Restaurar rascunho</button>
     </div>
   </div>
+  <!-- ================= ESTABELECIMENTO DE SAÚDE ================= -->
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2>Estabelecimento de saúde</h2>
+      </div>
+    </div>
+    <div class="coverage-wrap">
+      <div class="date-grid">
+        <div class="field">
+          <label>CNES do estabelecimento
+            <span class="hint" tabindex="0" data-tip="Informe o número do
+Cadastro Nacional de Estabelecimentos de Saúde (CNES), com 7 dígitos.">i</span>
+          </label>
+          <input type="text" id="estabCnes" inputmode="numeric" maxlength="7" placeholder="0000000" autocomplete="off">
+          <div class="field-error" id="estabCnesError">Informe um CNES válido, com 7 dígitos numéricos.</div>
+        </div>
+        <div class="field">
+          <label>Nome completo do estabelecimento</label>
+          <input type="text" id="estabNome" placeholder="Nome do estabelecimento de saúde" autocomplete="off">
+          <div class="field-error" id="estabNomeError">Informe o nome completo do estabelecimento.</div>
+        </div>
+        <div class="field">
+          <label>Nome completo do responsável</label>
+          <input type="text" id="estabResponsavel" placeholder="Nome completo do responsável" autocomplete="off">
+          <div class="field-error" id="estabResponsavelError">Informe o nome completo do responsável.</div>
+        </div>
+        <div class="field">
+          <label>Email
+            <span class="hint" tabindex="0" data-tip="Email de contato do
+responsável pela programação, para eventuais dúvidas ou retorno.">i</span>
+          </label>
+          <input type="email" id="estabEmail" placeholder="nome@exemplo.com" autocomplete="off">
+          <div class="field-error" id="estabEmailError">Informe um email válido (ex.: nome@exemplo.com).</div>
+        </div>
+        <div class="field">
+          <label>Telefone
+            <span class="hint" tabindex="0" data-tip="Informe o telefone com
+DDD entre parênteses, no formato (xx) xxxxx-xxxx.">i</span>
+          </label>
+          <input type="tel" id="estabTelefone" placeholder="(xx) xxxxx-xxxx" autocomplete="off">
+          <div class="field-error" id="estabTelefoneError">Informe o telefone com DDD, no formato (xx) xxxxx-xxxx.</div>
+        </div>
+      </div>
+    </div>
+  </section>
   <!-- ================= COBERTURA ================= -->
   <section class="card">
     <div class="card-head">
@@ -1236,6 +1290,7 @@ tabela acima para vê-los aqui.</td>
     </div>
     <div class="actions-buttons">
       <button class="ghost" id="btnReset">Limpar formulário</button>
+      <button class="ghost" id="btnExportCSV">Exportar CSV</button>
       <button class="primary" id="btnPrint">Imprimir / Exportar PDF</button>
     </div>
   </div>
@@ -1750,6 +1805,11 @@ const items = [
   const dataAnalise = document.getElementById('dataAnalise');
   const dataInicio = document.getElementById('dataInicio');
   const dataFim = document.getElementById('dataFim');
+  const estabCnes = document.getElementById('estabCnes');
+  const estabNome = document.getElementById('estabNome');
+  const estabResponsavel = document.getElementById('estabResponsavel');
+  const estabEmail = document.getElementById('estabEmail');
+  const estabTelefone = document.getElementById('estabTelefone');
   function hojeISO(){
     const d = new Date();
     const tz = d.getTimezoneOffset();
@@ -1775,6 +1835,77 @@ const items = [
   function getVal(sel){ return parseFloat(document.querySelector(sel).value) ||
 0; }
   function setText(el,val){ el.textContent = val; }
+
+  // ---- Estabelecimento de saúde: máscara e validação ----
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const TELEFONE_REGEX = /^\(\d{2}\) \d{4,5}-\d{4}$/;
+
+  function maskTelefone(valor){
+    let digitos = valor.replace(/\D/g,'').slice(0,11);
+    if(digitos.length === 0) return '';
+    let out = '(' + digitos.slice(0,2);
+    if(digitos.length >= 2) out += ') ';
+    if(digitos.length > 2){
+      const resto = digitos.slice(2);
+      if(resto.length > 4){
+        const corte = digitos.length > 10 ? 5 : 4;
+        out += resto.slice(0,corte) + (resto.length > corte ? '-' + resto.slice(corte) : '');
+      } else {
+        out += resto;
+      }
+    }
+    return out;
+  }
+  estabTelefone.addEventListener('input', ()=>{
+    const pos = estabTelefone.value.length;
+    estabTelefone.value = maskTelefone(estabTelefone.value);
+    if(pos >= estabTelefone.value.length) estabTelefone.setSelectionRange(estabTelefone.value.length, estabTelefone.value.length);
+  });
+
+  estabCnes.addEventListener('input', ()=>{
+    estabCnes.value = estabCnes.value.replace(/\D/g,'').slice(0,7);
+  });
+
+  function validarCampoEstab(input, valido){
+    const campo = input.closest('.field');
+    campo.classList.toggle('invalid', !valido);
+    return valido;
+  }
+  function validarCnes(){
+    const v = estabCnes.value.trim();
+    return validarCampoEstab(estabCnes, v === '' || /^\d{7}$/.test(v));
+  }
+  function validarNome(){
+    return validarCampoEstab(estabNome, estabNome.value.trim() === '' || estabNome.value.trim().length >= 3);
+  }
+  function validarResponsavel(){
+    return validarCampoEstab(estabResponsavel, estabResponsavel.value.trim() === '' || estabResponsavel.value.trim().length >= 3);
+  }
+  function validarEmail(){
+    const v = estabEmail.value.trim();
+    return validarCampoEstab(estabEmail, v === '' || EMAIL_REGEX.test(v));
+  }
+  function validarTelefone(){
+    const v = estabTelefone.value.trim();
+    return validarCampoEstab(estabTelefone, v === '' || TELEFONE_REGEX.test(v));
+  }
+  // Valida tudo de uma vez (usado, por exemplo, antes de imprimir/exportar)
+  function validarEstabelecimento(){
+    const okCnes = validarCnes();
+    const okNome = validarNome();
+    const okResp = validarResponsavel();
+    const okEmail = validarEmail();
+    const okTel = validarTelefone();
+    return okCnes && okNome && okResp && okEmail && okTel;
+  }
+  estabCnes.addEventListener('blur', validarCnes);
+  estabNome.addEventListener('blur', validarNome);
+  estabResponsavel.addEventListener('blur', validarResponsavel);
+  estabEmail.addEventListener('blur', validarEmail);
+  estabTelefone.addEventListener('blur', validarTelefone);
+  [estabCnes, estabNome, estabResponsavel, estabEmail, estabTelefone].forEach(inp=>{
+    inp.addEventListener('input', ()=> inp.closest('.field').classList.remove('invalid'));
+  });
 
   const dateAlert = document.getElementById('dateAlert');
   const dateAlertList = document.getElementById('dateAlertList');
@@ -1976,6 +2107,87 @@ acima para vê-los aqui.</td></tr>`;
   document.getElementById('btnPrint').addEventListener('click', ()=>
 window.print());
 
+  // ---- Exportação em CSV ----
+  function escapeCSV(valor){
+    const str = String(valor === undefined || valor === null ? '' : valor);
+    if(/[;"\n\r]/.test(str)){
+      return '"' + str.replace(/"/g,'""') + '"';
+    }
+    return str;
+  }
+
+  function exportarCSV(){
+    const linhasTabela = Array.from(tbody.querySelectorAll('tr[data-key]'));
+    if(linhasTabela.length === 0){
+      alert('Nenhum item adicionado à programação para exportar.');
+      return;
+    }
+
+    const cabecalho = [
+      'Status','Item','Código SIGAF','Quantidade por embalagem (un)',
+      'Consumo estimado no mês (un)','Estoque disponível (un)',
+      'Reservado para outros programas (un)','Vencimento próximo (un)',
+      'A receber (un)','Margem de segurança (%)','Programação de ajuste (un)',
+      'Cobertura (meses)','Cobertura (dias)',
+      'A consumir até início da cobertura (un)','Estoque futuro (un)',
+      'Estoque de segurança (un)','Quantidade necessária (un)',
+      'Programação sugerida (ajuste à embalagem) (un)','Quantidade excedente (un)'
+    ];
+
+    const linhas = [cabecalho];
+
+    linhasTabela.forEach(tr=>{
+      const key = tr.dataset.key;
+      const item = itemsByKey[key];
+      const getVal = (col)=>{
+        const inp = tr.querySelector(`input[data-col="${col}"]`);
+        return inp ? inp.value : '';
+      };
+      const getResult = (cls)=>{
+        const td = tr.querySelector(`td.${cls}`);
+        return td ? td.textContent.trim() : '';
+      };
+      const badge = tr.querySelector('.status-badge');
+      const status = badge ? badge.textContent.trim() : '';
+
+      linhas.push([
+        status,
+        item ? item.name : '',
+        item ? item.code : '',
+        getVal('fe'),
+        getVal('consumo'),
+        getVal('estoque'),
+        getVal('reservado'),
+        getVal('vencimento'),
+        getVal('receber'),
+        getVal('margem'),
+        getVal('programacao'),
+        getResult('sem-meses'),
+        getResult('sem-dias'),
+        getResult('sem-aconsumir'),
+        getResult('sem-futuro'),
+        getResult('sem-seguranca'),
+        getResult('sem-necessaria'),
+        getResult('sem-sugerida'),
+        getResult('sem-excedente'),
+      ]);
+    });
+
+    const csv = linhas.map(linha=> linha.map(escapeCSV).join(';')).join('\r\n');
+    const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const dataStr = hojeISO();
+    a.href = url;
+    a.download = `programacao-cbaf-${dataStr}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  document.getElementById('btnExportCSV').addEventListener('click', exportarCSV);
+
   const filtroSemaforo = document.getElementById('filtroSemaforo');
   const contagemSemaforo = document.getElementById('contagemSemaforo');
   function aplicarFiltroSemaforo(){
@@ -2064,6 +2276,11 @@ window.print());
     return {
       v: 1,
       savedAt: Date.now(),
+      estabCnes: estabCnes.value,
+      estabNome: estabNome.value,
+      estabResponsavel: estabResponsavel.value,
+      estabEmail: estabEmail.value,
+      estabTelefone: estabTelefone.value,
       dataAnalise: dataAnalise.value,
       dataInicio: dataInicio.value,
       dataFim: dataFim.value,
@@ -2075,6 +2292,11 @@ window.print());
   // Aplica um estado previamente salvo, recriando os itens da tabela
   function applyState(state){
     if(!state) return;
+    if(state.estabCnes !== undefined) estabCnes.value = state.estabCnes;
+    if(state.estabNome !== undefined) estabNome.value = state.estabNome;
+    if(state.estabResponsavel !== undefined) estabResponsavel.value = state.estabResponsavel;
+    if(state.estabEmail !== undefined) estabEmail.value = state.estabEmail;
+    if(state.estabTelefone !== undefined) estabTelefone.value = state.estabTelefone;
     if(state.dataAnalise !== undefined) dataAnalise.value = state.dataAnalise;
     if(state.dataInicio !== undefined) dataInicio.value = state.dataInicio;
     if(state.dataFim !== undefined) dataFim.value = state.dataFim;
