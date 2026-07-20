@@ -367,66 +367,39 @@ transparent 60%);
     border:1px solid var(--border);
     flex-shrink:0;
   }
-  .hint::after{
-    content: attr(data-tip);
-    position:absolute;
-    bottom:135%;
-    left:50%;
-    transform:translateX(-50%) translateY(4px);
-    width:260px;
+  /* O conteúdo da dica (data-tip) é exibido por JS em um elemento fixo,
+  anexado ao <body> (ver .js-tooltip abaixo). Isso evita que o tooltip seja
+  cortado pelo "overflow:hidden" dos cards ou de tabelas com rolagem, e
+  permite reposicioná-lo (acima/abaixo, com clamp nas bordas da janela) sem
+  nunca sobrepor o rótulo associado. */
+  .js-tooltip{
+    position:fixed;
+    display:none;
+    max-width:260px;
+    width:max-content;
     background:var(--ink);
     color:#F3F5EE;
+    font-family:var(--sans);
     font-size:12px;
     font-weight:400;
     line-height:1.5;
     padding:10px 12px;
     border-radius:var(--radius-sm);
     box-shadow:0 10px 30px rgba(0,0,0,0.25);
-    opacity:0;
-    visibility:hidden;
-    transition:opacity .15s ease, transform .15s ease;
-    z-index:30;
+    z-index:9999;
     pointer-events:none;
   }
-  .hint::before{
-    content:"";
-    position:absolute;
-    bottom:135%;
-    left:50%;
-    transform:translateX(-50%) translateY(-2px);
+  .js-tooltip-arrow{
+    position:fixed;
+    display:none;
+    width:0;
+    height:0;
     border:6px solid transparent;
-    border-top-color:var(--ink);
-    opacity:0;
-    visibility:hidden;
-    transition:opacity .15s ease;
-    z-index:30;
+    z-index:9999;
+    pointer-events:none;
   }
-  .hint:hover::after,.hint:focus::after{ opacity:1; visibility:visible;
-transform:translateX(-50%) translateY(0); }
-  .hint:hover::before,.hint:focus::before{ opacity:1; visibility:visible; }
-  /* Nos cabeçalhos, o título pode quebrar em várias linhas e o ícone "i"
-  nem sempre fica na última linha. Por isso o tooltip é ancorado na célula
-  inteira (.th-flex), e não no ícone isoladamente, para sempre abrir abaixo
-  de todo o texto do título, sem sobrepor. */
-  th .th-flex{ position:relative; }
-  th .hint{ position:static; }
-  th .hint::after{
-    bottom:auto;
-    top:100%;
-    margin-top:8px;
-    left:50%;
-    transform:translateX(-50%) translateY(4px);
-  }
-  th .hint:hover::after, th .hint:focus::after{ transform:translateX(-50%) translateY(0); }
-  th .hint::before{
-    bottom:auto;
-    top:100%;
-    margin-top:2px;
-    left:50%;
-    transform:translateX(-50%) translateY(-2px) rotate(180deg);
-    border-top-color:transparent;
-    border-bottom-color:var(--ink);
-  }
+  .js-tooltip-arrow.arrow-up{ border-bottom-color:var(--ink); }
+  .js-tooltip-arrow.arrow-down{ border-top-color:var(--ink); }
   /* Timeline */
   .timeline{
     position:relative;
@@ -2517,6 +2490,106 @@ window.print());
 
   tentarRestaurarRascunho();
   recalc();
+
+  // ---- Tooltips dos ícones "i" (.hint) ----
+  // Renderizados como elementos position:fixed anexados ao <body>, em vez de
+  // pseudo-elementos presos ao ícone. Assim eles nunca são cortados pelo
+  // overflow:hidden dos cards (ou de tabelas com rolagem horizontal) e podem
+  // ser reposicionados acima/abaixo do rótulo, sempre inteiramente visíveis
+  // e sem sobrepor o rótulo associado.
+  (function initHintTooltips(){
+    var tooltipEl = null;
+    var arrowEl = null;
+
+    function ensureTooltip(){
+      if(tooltipEl) return;
+      tooltipEl = document.createElement('div');
+      tooltipEl.className = 'js-tooltip';
+      tooltipEl.setAttribute('role','tooltip');
+      document.body.appendChild(tooltipEl);
+      arrowEl = document.createElement('div');
+      arrowEl.className = 'js-tooltip-arrow';
+      document.body.appendChild(arrowEl);
+    }
+
+    function showTip(hintEl){
+      var texto = hintEl.getAttribute('data-tip');
+      if(!texto) return;
+      ensureTooltip();
+      tooltipEl.textContent = texto.replace(/\s+/g,' ').trim();
+
+      // Ancora no cabeçalho inteiro (.th-flex) quando existir, para o
+      // tooltip abrir sempre abaixo/acima de todo o título da coluna, e não
+      // apenas do ícone isolado.
+      var anchor = hintEl.closest('.th-flex') || hintEl;
+      var rect = anchor.getBoundingClientRect();
+
+      // Mede o tooltip já com display:block (fora da tela) para calcular o tamanho real.
+      tooltipEl.style.left = '-9999px';
+      tooltipEl.style.top = '-9999px';
+      tooltipEl.style.display = 'block';
+      var tipRect = tooltipEl.getBoundingClientRect();
+
+      var margin = 8;
+      var gap = 10;
+      var viewportW = window.innerWidth;
+      var viewportH = window.innerHeight;
+
+      // Decide se cabe abaixo do rótulo/ícone; senão, mostra acima. Assim o
+      // tooltip fica sempre inteiramente visível, sem tampar o rótulo.
+      var placeAbove = (rect.bottom + gap + tipRect.height + margin) > viewportH
+                        && (rect.top - gap - tipRect.height) > margin;
+
+      var top = placeAbove ? (rect.top - gap - tipRect.height) : (rect.bottom + gap);
+      top = Math.max(margin, Math.min(top, viewportH - tipRect.height - margin));
+
+      var left = rect.left + (rect.width / 2) - (tipRect.width / 2);
+      var minLeft = margin;
+      var maxLeft = viewportW - tipRect.width - margin;
+      left = Math.max(minLeft, Math.min(left, maxLeft));
+
+      tooltipEl.style.left = left + 'px';
+      tooltipEl.style.top = top + 'px';
+
+      var arrowCenter = rect.left + (rect.width / 2);
+      var arrowLeft = Math.max(left + 10, Math.min(arrowCenter - 6, left + tipRect.width - 22));
+      arrowEl.style.left = arrowLeft + 'px';
+      if(placeAbove){
+        arrowEl.className = 'js-tooltip-arrow arrow-down';
+        arrowEl.style.top = (top + tipRect.height) + 'px';
+      }else{
+        arrowEl.className = 'js-tooltip-arrow arrow-up';
+        arrowEl.style.top = (top - 6) + 'px';
+      }
+      arrowEl.style.display = 'block';
+    }
+
+    function hideTip(){
+      if(tooltipEl) tooltipEl.style.display = 'none';
+      if(arrowEl) arrowEl.style.display = 'none';
+    }
+
+    document.addEventListener('mouseover', function(e){
+      var hint = e.target.closest && e.target.closest('.hint');
+      if(hint) showTip(hint);
+    });
+    document.addEventListener('mouseout', function(e){
+      var hint = e.target.closest && e.target.closest('.hint');
+      if(!hint) return;
+      var related = e.relatedTarget;
+      if(!related || !hint.contains(related)) hideTip();
+    });
+    document.addEventListener('focusin', function(e){
+      var hint = e.target.closest && e.target.closest('.hint');
+      if(hint) showTip(hint);
+    });
+    document.addEventListener('focusout', function(e){
+      var hint = e.target.closest && e.target.closest('.hint');
+      if(hint) hideTip();
+    });
+    window.addEventListener('scroll', hideTip, true);
+    window.addEventListener('resize', hideTip);
+  })();
 })();
 </script>
 </body>
