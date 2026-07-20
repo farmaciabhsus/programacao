@@ -404,9 +404,29 @@ transparent 60%);
   .hint:hover::after,.hint:focus::after{ opacity:1; visibility:visible;
 transform:translateX(-50%) translateY(0); }
   .hint:hover::before,.hint:focus::before{ opacity:1; visibility:visible; }
-  th .hint::after{ bottom:auto; top:135%; }
-  th .hint::before{ bottom:auto; top:135%; transform:translateX(-50%)
-translateY(2px) rotate(180deg); border-top-color:transparent; border-bottom-color:var(--ink); }
+  /* Nos cabeçalhos, o título pode quebrar em várias linhas e o ícone "i"
+  nem sempre fica na última linha. Por isso o tooltip é ancorado na célula
+  inteira (.th-flex), e não no ícone isoladamente, para sempre abrir abaixo
+  de todo o texto do título, sem sobrepor. */
+  th .th-flex{ position:relative; }
+  th .hint{ position:static; }
+  th .hint::after{
+    bottom:auto;
+    top:100%;
+    margin-top:8px;
+    left:50%;
+    transform:translateX(-50%) translateY(4px);
+  }
+  th .hint:hover::after, th .hint:focus::after{ transform:translateX(-50%) translateY(0); }
+  th .hint::before{
+    bottom:auto;
+    top:100%;
+    margin-top:2px;
+    left:50%;
+    transform:translateX(-50%) translateY(-2px) rotate(180deg);
+    border-top-color:transparent;
+    border-bottom-color:var(--ink);
+  }
   /* Timeline */
   .timeline{
     position:relative;
@@ -621,6 +641,12 @@ translateY(2px) rotate(180deg); border-top-color:transparent; border-bottom-colo
     top:0;
   }
   thead th .th-flex{ display:flex; align-items:center; gap:6px; white-space:normal; max-width:150px; line-height:1.3; }
+  /* .th é sticky, então cada cabeçalho cria seu próprio contexto de
+  empilhamento: um z-index alto só no balão não basta, pois a coluna
+  vizinha (desenhada depois no HTML) continua cobrindo-o. Por isso,
+  eleva-se o z-index do próprio th ao passar o mouse/focar o ícone "i",
+  garantindo que a dica fique acima das colunas ao lado. */
+  thead th:has(.hint:hover), thead th:has(.hint:focus){ z-index:50; }
   tbody td{
     padding:8px 10px;
     border-bottom:1px solid var(--border-soft);
