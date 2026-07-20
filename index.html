@@ -349,6 +349,7 @@ transparent 60%);
     color:var(--ink-soft);
   }
   .calc-memo dd b{ color:var(--sage-deep); font-family:var(--sans); }
+  .required-mark{ color:#B3261E; font-weight:700; margin-left:2px; }
   /* hint icon + tooltip */
   .hint{
     position:relative;
@@ -420,9 +421,45 @@ transparent 60%);
     background:linear-gradient(90deg, var(--sage) 0%, var(--sage-dark) 100%);
     transition:width .3s ease;
   }
+  .timeline-marker{
+    position:absolute; top:-3px;
+    width:2px; height:12px;
+    border-radius:2px;
+    transform:translateX(-1px);
+    display:none;
+    transition:left .3s ease;
+  }
+  .timeline-marker.marker-frio{ background:var(--sage-deep); }
+  .timeline-marker.marker-amb{ background:var(--amber); }
+  .marker-legend{ display:inline-flex; align-items:center; gap:5px; }
+  .marker-legend::before{
+    content:"";
+    width:8px; height:8px;
+    border-radius:2px;
+    display:inline-block;
+  }
+  .marker-legend-frio::before{ background:var(--sage-deep); }
+  .marker-legend-amb::before{ background:var(--amber); }
+  .term-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:3px;
+    font-size:10.5px;
+    font-weight:700;
+    letter-spacing:0.02em;
+    padding:1px 6px;
+    border-radius:20px;
+    background:#E3F0EC;
+    color:var(--sage-deep);
+    border:1px solid rgba(47,110,92,0.25);
+    white-space:nowrap;
+    vertical-align:middle;
+  }
   .timeline-labels{
     display:flex;
     justify-content:space-between;
+    flex-wrap:wrap;
+    gap:6px 14px;
     margin-top:10px;
     font-size:12px;
     color:var(--ink-soft);
@@ -454,6 +491,62 @@ transparent 60%);
     margin-top:6px;
     letter-spacing:0.02em;
   }
+  /* ---------- Grupos de estatísticas (Programação): agrupa itens
+     relacionados dentro de um mesmo painel, para leitura mais rápida ---------- */
+  .stat-groups{
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+    margin-top:18px;
+    margin-bottom:24px;
+  }
+  .stat-group{
+    flex:1 1 260px;
+    background:var(--surface);
+    border:1px solid var(--border-soft);
+    border-radius:var(--radius-md);
+    padding:14px 18px 16px;
+  }
+  .stat-group-title{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--ink-soft);
+    margin:0 0 12px;
+  }
+  .stat-group-items{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px 26px;
+  }
+  .stat-mini{ min-width:90px; }
+  .stat-mini .num{
+    font-family:var(--serif);
+    font-size:24px;
+    font-weight:700;
+    color:var(--sage-deep);
+    line-height:1;
+  }
+  .stat-mini .cap{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    margin-top:6px;
+    letter-spacing:0.02em;
+  }
+  .stat-mini.accent-frio .num{ color:var(--sage-deep); }
+  .stat-mini.accent-amb .num{ color:var(--amber); }
+  .term-dot{
+    width:8px;height:8px;border-radius:2px;flex-shrink:0;display:inline-block;
+  }
+  .term-dot.dot-frio{ background:var(--sage-deep); }
+  .term-dot.dot-amb{ background:var(--amber); }
   /* ---------- Search bar ---------- */
   .search-bar{
     display:flex;
@@ -796,6 +889,19 @@ transparent 60%);
     line-height:1.6;
   }
   /* ---------- Semáforo de status ---------- */
+  .legend-panel{
+    background:var(--surface);
+    border:1px solid var(--border-soft);
+    border-radius:var(--radius-md);
+    padding:16px 18px 18px;
+    margin-bottom:16px;
+  }
+  .legend-panel .legend-row{ margin-bottom:0; }
+  .legend-panel .legend-subtitle{
+    margin:0 0 12px;
+    padding-top:0;
+    border-top:0;
+  }
   .legend-row{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
@@ -803,14 +909,19 @@ transparent 60%);
     margin-bottom:20px;
   }
   .legend-stat{
-    background:var(--surface);
+    background:var(--white);
     border:1px solid var(--border-soft);
+    border-left:4px solid var(--border-soft);
     border-radius:var(--radius-md);
     padding:14px 16px;
     display:flex;
     align-items:center;
     gap:12px;
   }
+  .legend-stat.st-red{ border-left-color:#B3261E; }
+  .legend-stat.st-amber{ border-left-color:var(--amber); }
+  .legend-stat.st-green{ border-left-color:var(--sage-deep); }
+  .legend-stat.st-gray{ border-left-color:#8A9080; }
   .legend-stat .dot{ width:12px;height:12px;border-radius:50%;flex-shrink:0; }
   .legend-stat .dot.red{ background:#B3261E; }
   .legend-stat .dot.amber{ background:var(--amber); }
@@ -1210,31 +1321,55 @@ DDD entre parênteses, no formato (xx) xxxxx-xxxx.">i</span>
 
       <div class="date-grid">
         <div class="field">
-          <label>Data de Análise do Estoque
-            <span class="hint" tabindex="0" data-tip="Informe a data em que o
-estoque foi verificado, no sistema físico e/ou virtual (SIGAF ou sistema
-próprio). Preferencialmente, realize essa análise no dia da programação ou o
-mais próximo possível.">i</span>
+          <label>Data de Análise do Estoque<span class="required-mark" title="Campo obrigatório">*</span>
+            <span class="hint" tabindex="0" data-tip="Obrigatório. Informe a
+data em que o estoque foi verificado, no sistema físico e/ou virtual (SIGAF
+ou sistema próprio). Preferencialmente, realize essa análise no dia da
+programação ou o mais próximo possível.">i</span>
           </label>
-          <input type="date" id="dataAnalise">
+          <input type="date" id="dataAnalise" required>
         </div>
         <div class="field">
-          <label>Data Início de Cobertura
-            <span class="hint" tabindex="0" data-tip="Preencha as datas de
-início e fim da cobertura da programação vigente. Essas datas estão disponíveis
-na Nota Informativa de abertura da programação (item 'Cobertura
-pactuada').">i</span>
+          <label>Data Início de Cobertura<span class="required-mark" title="Campo obrigatório">*</span>
+            <span class="hint" tabindex="0" data-tip="Obrigatório. Preencha
+as datas de início e fim da cobertura da programação vigente. Essas datas
+estão disponíveis na Nota Informativa de abertura da programação (item
+'Cobertura pactuada').">i</span>
           </label>
-          <input type="date" id="dataInicio">
+          <input type="date" id="dataInicio" required>
         </div>
         <div class="field">
-          <label>Data Fim de Cobertura
-            <span class="hint" tabindex="0" data-tip="Preencha as datas de
-início e fim da cobertura da programação vigente. Essas datas estão disponíveis
-na Nota Informativa de abertura da programação (item 'Cobertura
-pactuada').">i</span>
+          <label>Data Fim de Cobertura<span class="required-mark" title="Campo obrigatório">*</span>
+            <span class="hint" tabindex="0" data-tip="Obrigatório. Preencha
+as datas de início e fim da cobertura da programação vigente. Essas datas
+estão disponíveis na Nota Informativa de abertura da programação (item
+'Cobertura pactuada').">i</span>
           </label>
-          <input type="date" id="dataFim">
+          <input type="date" id="dataFim" required>
+        </div>
+        <div class="field">
+          <label>Data Prevista de Entrega · Termolábil<span class="required-mark" title="Campo obrigatório">*</span>
+            <span class="hint" tabindex="0" data-tip="Obrigatório. Informe a
+data prevista para a entrega efetiva dos itens termolábeis (que exigem
+refrigeração/cadeia de frio) programados neste estabelecimento. Pode ser
+diferente da Data Início de Cobertura pactuada. Enquanto não for preenchida,
+os cálculos desses itens ficam zerados — não há substituição automática por
+outra data.">i</span>
+          </label>
+          <input type="date" id="dataEntregaFrio" required>
+          <div class="field-error" id="dataEntregaFrioError">A Data Prevista de Entrega (Termolábil) é obrigatória e não pode ser anterior à Data de Análise do Estoque.</div>
+        </div>
+        <div class="field">
+          <label>Data Prevista de Entrega · Termoestável<span class="required-mark" title="Campo obrigatório">*</span>
+            <span class="hint" tabindex="0" data-tip="Obrigatório. Informe a
+data prevista para a entrega efetiva dos itens termoestáveis (sem exigência
+de cadeia de frio) programados neste estabelecimento. Pode ser diferente da
+Data Início de Cobertura pactuada. Enquanto não for preenchida, os cálculos
+desses itens ficam zerados — não há substituição automática por outra
+data.">i</span>
+          </label>
+          <input type="date" id="dataEntregaAmb" required>
+          <div class="field-error" id="dataEntregaAmbError">A Data Prevista de Entrega (Termoestável) é obrigatória e não pode ser anterior à Data de Análise do Estoque.</div>
         </div>
       </div>
       <div class="date-alert" id="dateAlert" style="display:none;">
@@ -1246,22 +1381,24 @@ pactuada').">i</span>
       </div>
       <div class="timeline">
         <div class="timeline-track"><div class="timeline-fill"
-id="timelineFill"></div></div>
+id="timelineFill"></div><div class="timeline-marker marker-frio" id="timelineMarkerFrio" title="Data prevista de entrega · Termolábil"></div><div class="timeline-marker marker-amb" id="timelineMarkerAmb" title="Data prevista de entrega · Termoestável"></div></div>
         <div class="timeline-labels">
           <span>Análise: <b id="lblAnalise">—</b></span>
           <span>Início: <b id="lblInicio">—</b></span>
+          <span class="marker-legend marker-legend-frio">Entrega termolábil: <b id="lblEntregaFrio">—</b></span>
+          <span class="marker-legend marker-legend-amb">Entrega termoestável: <b id="lblEntregaAmb">—</b></span>
           <span>Fim: <b id="lblFim">—</b></span>
         </div>
       </div>
       <div class="date-alert warn" id="coberturaAlert" style="display:none;">
         <span class="icon">!</span>
         <div>
-          <strong>Período de cobertura não preenchido:</strong> a "Cobertura
-          (em meses)" está em 0, então a Quantidade necessária, a Programação
-          sugerida e o Resumo do pedido ficam zerados mesmo com Consumo
-          estimado preenchido. Informe a <b>Data Início</b> e a
-          <b>Data Fim de Cobertura</b> acima para os cálculos considerarem o
-          consumo informado.
+          <strong>Datas obrigatórias pendentes ou inválidas:</strong> a
+          Quantidade necessária, a Programação sugerida e o Resumo do pedido
+          ficam zerados mesmo com Consumo estimado preenchido enquanto as
+          cinco datas do período de cobertura (Data de Análise, Data Início e
+          Data Fim de Cobertura, e as Datas Previstas de Entrega Termolábil e
+          Termoestável) não estiverem <b>todas</b> preenchidas e corretas.
         </div>
       </div>
     </div>
@@ -1280,51 +1417,70 @@ campo.">i</span> para ver a orientação oficial.</p>
       </div>
     </div>
     <div class="card-body" style="padding-bottom:0;">
-      <div class="stat-row">
-        <div class="stat">
-          <div class="num" id="statMeses">0</div>
-          <div class="cap">Cobertura (em meses)</div>
+      <div class="stat-groups">
+        <div class="stat-group">
+          <p class="stat-group-title">Período de cobertura vigente</p>
+          <div class="stat-group-items">
+            <div class="stat-mini">
+              <div class="num" id="statMeses">0</div>
+              <div class="cap">Cobertura (em meses)</div>
+            </div>
+            <div class="stat-mini">
+              <div class="num" id="statDias">0</div>
+              <div class="cap">Cobertura (em dias)</div>
+            </div>
+          </div>
         </div>
-        <div class="stat">
-          <div class="num" id="statDias">0</div>
-          <div class="cap">Cobertura (em dias)</div>
-        </div>
-        <div class="stat">
-          <div class="num" id="statDiasAteInicio">0</div>
-          <div class="cap">Dias entre a análise e o início</div>
-        </div>
-      </div>
-      <div class="legend-row">
-        <div class="legend-stat">
-          <span class="dot red"></span>
-          <div><div class="num" id="semCountRed">0</div><div class="cap">Itens em risco de desabastecimento</div></div>
-        </div>
-        <div class="legend-stat">
-          <span class="dot amber"></span>
-          <div><div class="num" id="semCountAmber">0</div><div class="cap">Itens com estoque excedente</div></div>
-        </div>
-        <div class="legend-stat">
-          <span class="dot green"></span>
-          <div><div class="num" id="semCountGreen">0</div><div class="cap">Itens com estoque adequado</div></div>
-        </div>
-        <div class="legend-stat">
-          <span class="dot gray"></span>
-          <div><div class="num" id="semCountGray">0</div><div class="cap">Itens sem dados preenchidos</div></div>
+        <div class="stat-group">
+          <p class="stat-group-title">Dias até a entrega, por categoria térmica</p>
+          <div class="stat-group-items">
+            <div class="stat-mini accent-frio">
+              <div class="num" id="statDiasAteEntregaFrio">0</div>
+              <div class="cap"><span class="term-dot dot-frio"></span>Termolábil</div>
+            </div>
+            <div class="stat-mini accent-amb">
+              <div class="num" id="statDiasAteEntregaAmb">0</div>
+              <div class="cap"><span class="term-dot dot-amb"></span>Termoestável</div>
+            </div>
+          </div>
         </div>
       </div>
-      <p class="legend-subtitle">Suficiência do pedido <span class="hint" tabindex="0" data-tip="Indicador independente do semáforo de ruptura acima: compara a quantidade solicitada (programação sugerida, já ajustada à embalagem) com a quantidade necessária calculada para o período futuro de cobertura.">i</span></p>
-      <div class="legend-row">
-        <div class="legend-stat">
-          <span class="dot green"></span>
-          <div><div class="num" id="sufCountGreen">0</div><div class="cap">Itens com pedido suficiente</div></div>
+      <div class="legend-panel">
+        <p class="legend-subtitle">Status de risco de desabastecimento <span class="hint" tabindex="0" data-tip="Compara o estoque futuro projetado com o consumo estimado de cada item, considerando as datas de entrega e o período de cobertura informados.">i</span></p>
+        <div class="legend-row">
+          <div class="legend-stat st-red">
+            <span class="dot red"></span>
+            <div><div class="num" id="semCountRed">0</div><div class="cap">Itens em risco de desabastecimento</div></div>
+          </div>
+          <div class="legend-stat st-amber">
+            <span class="dot amber"></span>
+            <div><div class="num" id="semCountAmber">0</div><div class="cap">Itens com estoque excedente</div></div>
+          </div>
+          <div class="legend-stat st-green">
+            <span class="dot green"></span>
+            <div><div class="num" id="semCountGreen">0</div><div class="cap">Itens com estoque adequado</div></div>
+          </div>
+          <div class="legend-stat st-gray">
+            <span class="dot gray"></span>
+            <div><div class="num" id="semCountGray">0</div><div class="cap">Itens sem dados preenchidos</div></div>
+          </div>
         </div>
-        <div class="legend-stat">
-          <span class="dot red"></span>
-          <div><div class="num" id="sufCountRed">0</div><div class="cap">Itens com pedido insuficiente</div></div>
-        </div>
-        <div class="legend-stat">
-          <span class="dot gray"></span>
-          <div><div class="num" id="sufCountGray">0</div><div class="cap">Itens sem dados preenchidos</div></div>
+      </div>
+      <div class="legend-panel">
+        <p class="legend-subtitle">Suficiência do pedido <span class="hint" tabindex="0" data-tip="Indicador independente do semáforo de ruptura acima: compara a quantidade solicitada (programação sugerida, já ajustada à embalagem) com a quantidade necessária calculada para o período futuro de cobertura.">i</span></p>
+        <div class="legend-row">
+          <div class="legend-stat st-green">
+            <span class="dot green"></span>
+            <div><div class="num" id="sufCountGreen">0</div><div class="cap">Itens com pedido suficiente</div></div>
+          </div>
+          <div class="legend-stat st-red">
+            <span class="dot red"></span>
+            <div><div class="num" id="sufCountRed">0</div><div class="cap">Itens com pedido insuficiente</div></div>
+          </div>
+          <div class="legend-stat st-gray">
+            <span class="dot gray"></span>
+            <div><div class="num" id="sufCountGray">0</div><div class="cap">Itens sem dados preenchidos</div></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1419,8 +1575,8 @@ necessária. Pode ser ajustado manualmente conforme diretriz do Ministério da
 Saúde.">i</span></div></th>
             <th class="col-detail"><div class="th-flex">Cobertura (meses)<span class="hint" tabindex="0" data-tip="Cobertura do período vigente calculada na primeira seção (Data Início a Data Fim de Cobertura).">i</span></div></th>
             <th class="col-detail"><div class="th-flex">Cobertura (dias)<span class="hint" tabindex="0" data-tip="Cobertura do período vigente, em dias corridos, calculada na primeira seção.">i</span></div></th>
-            <th class="col-detail"><div class="th-flex">Quantitativo a consumir até o início da cobertura (un)<span class="hint" tabindex="0" data-tip="Consumo estimado mensal proporcional aos dias entre a data de análise e a data de início de cobertura.">i</span></div></th>
-            <th class="col-detail"><div class="th-flex">quantitativo no estoque futuro (un)<span class="hint" tabindex="0" data-tip="Estoque disponível − a consumir até o início − reservado − vencimento próximo + a receber.">i</span></div></th>
+            <th class="col-detail"><div class="th-flex">Quantitativo a consumir até a entrega (un)<span class="hint" tabindex="0" data-tip="Consumo estimado mensal proporcional aos dias entre a Data de Análise e a Data Prevista de Entrega correspondente à categoria do item (Termolábil ou Termoestável). Todas as datas são obrigatórias; sem a Data Prevista de Entrega específica, este valor fica zerado.">i</span></div></th>
+            <th class="col-detail"><div class="th-flex">quantitativo no estoque futuro (un)<span class="hint" tabindex="0" data-tip="Estoque disponível − a consumir até a entrega − reservado − vencimento próximo + a receber.">i</span></div></th>
             <th class="col-detail"><div class="th-flex">Quantitativo do estoque de segurança (un)<span class="hint" tabindex="0" data-tip="Consumo estimado × meses de cobertura × margem de segurança (%).">i</span></div></th>
             <th><div class="th-flex">Quantidade necessária (un)<span class="hint" tabindex="0" data-tip="(Consumo estimado × meses de cobertura) + estoque de segurança − estoque futuro.">i</span></div></th>
             <th><div class="th-flex">Quantitativo para a programação sugerida (ajuste à embalagem) (un)<span class="hint" tabindex="0" data-tip="Quantidade da programação já arredondada ao múltiplo da quantidade por embalagem.">i</span></div></th>
@@ -1504,321 +1660,321 @@ tabela acima para vê-los aqui.</td>
 (function(){
   
 const items = [
-    { name:'ABATACEPTE 125 MG/ML SOLUÇÃO INJETÁVEL', code:'6833', fe:1, key:'item_0' },
-    { name:'ABATACEPTE 250 MG PÓ LIOFÍLICO PARA INJETÁVEL', code:'3004', fe:1, key:'item_1' },
-    { name:'ACIDO URSODESOXICOLICO 150 MG COMPRIMIDO', code:'1213', fe:30, key:'item_2' },
-    { name:'ACIDO URSODESOXICOLICO 300 MG COMPRIMIDO', code:'1214', fe:30, key:'item_3' },
-    { name:'ACIDO ZOLEDRONICO 0,05 MG/ML (POR FRASCO/BOLSA DE 100 ML) SOLUÇÃO INJETÁVEL', code:'5988', fe:1, key:'item_4' },
-    { name:'ACITRETINA 10 MG CAPSULA', code:'914', fe:100, key:'item_5' },
-    { name:'ACITRETINA 25 MG CAPSULA', code:'915', fe:100, key:'item_6' },
-    { name:'ADALIMUMABE 40 MG (BIOSSIMILAR B) SOLUÇÃO INJETÁVEL (SERINGA PREENCHIDA)', code:'9966', fe:2, key:'item_7' },
-    { name:'ADALIMUMABE 40 MG (ORIGINADOR) SOLUÇÃO INJETÁVEL (SERINGA PREENCHIDA)', code:'753', fe:2, key:'item_8' },
-    { name:'ÁGUA DESTILADA, BIDESTILADA, ESTÉRIL, APIROGÊNICA BOLSA OU FRASCO 100 ML', code:'', fe:1, key:'item_9' },
-    { name:'AGULHA PARA CANETA APLICADORA DE INSULINA NPH/REGULAR/AÇÃO RÁPIDA/AÇÃO PROLONGADA', code:'9596', fe:100, key:'item_10' },
-    { name:'ALENTUZUMABE 10 MG/ML SOLUÇÃO INJETÁVEL', code:'7664', fe:1, key:'item_11' },
-    { name:'ALFA-ALGLICOSIDASE 50 MG PÓ LIOFÍLICO PARA INJETÁVEL', code:'7653', fe:1, key:'item_12' },
-    { name:'ALFADORNASE 2,5 MG SOLUCAO PARA INALACAO', code:'1034', fe:6, key:'item_13' },
-    { name:'ALFAELOSULFASE 1 MG/ML SOLUÇÃO PARA DILUIÇÃO PARA INFUSÃO', code:'9718', fe:1, key:'item_14' },
-    { name:'ALFAEPOETINA (ERITROPOETINA) 1.000 UI SOLUÇÃO INJETÁVEL', code:'571', fe:12, key:'item_15' },
-    { name:'ALFAEPOETINA (ERITROPOETINA) 10.000 UI SOLUÇÃO INJETÁVEL', code:'1340', fe:10, key:'item_16' },
-    { name:'ALFAEPOETINA (ERITROPOETINA) 2.000 UI SOLUÇÃO INJETÁVEL', code:'574', fe:12, key:'item_17' },
-    { name:'ALFAEPOETINA (ERITROPOETINA) 3.000 UI SOLUÇÃO INJETÁVEL', code:'575', fe:20, key:'item_18' },
-    { name:'ALFAEPOETINA (ERITROPOETINA) 4.000 UI SOLUÇÃO INJETÁVEL', code:'576', fe:1, key:'item_19' },
-    { name:'ALFAGALSIDASE 1 MG/ML SOLUÇÃO INJETÁVEL', code:'9594', fe:1, key:'item_20' },
-    { name:'ALFAINTERFERONA 2B 3.000.000 UI SOLUÇÃO INJETÁVEL', code:'81', fe:1, key:'item_21' },
-    { name:'ALFAINTERFERONA 2B 5.000.000 UI SOLUÇÃO INJETÁVEL', code:'767', fe:1, key:'item_22' },
-    { name:'ALFATALIGLICERASE 200 UI PÓ LIOFÍLICO PARA INJETÁVEL', code:'6126', fe:1, key:'item_23' },
-    { name:'ALFAVELAGLICERASE 400 UI PÓ LIOFÍLICO PARA INJETÁVEL', code:'6128', fe:1, key:'item_24' },
-    { name:'ALFAVESTRONIDASE 10 MG SOLUÇÃO INJETÁVEL', code:'', fe:1, key:'item_25' },
-    { name:'AMANTADINA 100 MG COMPRIMIDO', code:'844', fe:30, key:'item_26' },
-    { name:'AMBRISENTANA 10 MG COMPRIMIDO REVESTIDO', code:'4214', fe:30, key:'item_27' },
-    { name:'AMBRISENTANA 5 MG COMPRIMIDO REVESTIDO', code:'4213', fe:30, key:'item_28' },
-    { name:'ATORVASTATINA CALCICA 10 MG COMPRIMIDO', code:'339', fe:90, key:'item_29' },
-    { name:'ATORVASTATINA CALCICA 20 MG COMPRIMIDO', code:'340', fe:90, key:'item_30' },
-    { name:'ATORVASTATINA CALCICA 80 MG COMPRIMIDO', code:'342', fe:30, key:'item_31' },
-    { name:'AZATIOPRINA 50 MG COMPRIMIDO', code:'1019', fe:100, key:'item_32' },
-    { name:'BARICITINIBE 2 MG COMPRIMIDO REVESTIDO', code:'9814', fe:30, key:'item_33' },
-    { name:'BARICITINIBE 4 MG COMPRIMIDO REVESTIDO', code:'9815', fe:30, key:'item_34' },
-    { name:'BETAINTERFERONA 1A 12.000.000 UI (44 MCG) SOLUÇÃO INJETÁVEL (SERINGA PREENCHIDA)', code:'1043', fe:12, key:'item_35' },
-    { name:'BETAINTERFERONA 1A 6.000.000 UI (22 MCG) SOLUÇÃO INJETÁVEL (SERINGA PREENCHIDA)', code:'1044', fe:12, key:'item_36' },
-    { name:'BETAINTERFERONA 1A 6.000.000 UI (30 MCG/0,5 ML) PÓ LIOFÍLICO PARA INJETÁVEL', code:'2283', fe:4, key:'item_37' },
-    { name:'BETAINTERFERONA 1B 9.600.000 UI (300 MCG) PÓ LIOFÍLICO PARA INJETÁVEL (FRASCO-AMPOLA)', code:'2282', fe:1, key:'item_38' },
-    { name:'BEZAFIBRATO 200 MG COMPRIMIDO', code:'297', fe:20, key:'item_39' },
-    { name:'BIOTINA 2,5 MG CÁPSULA', code:'', fe:1, key:'item_40' },
-    { name:'BOSENTANA 125 MG COMPRIMIDO', code:'1183', fe:60, key:'item_41' },
-    { name:'BOSENTANA 62,5 MG COMPRIMIDO', code:'1182', fe:60, key:'item_42' },
-    { name:'BROMETO DE GLICOPIRRÔNIO 50 MCG CAPSULA INALANTE', code:'8083', fe:30, key:'item_43' },
-    { name:'BROMETO DE UMECLIDÍNIO + TRIFENATATO DE VILANTEROL 62,5+25 MCG PO PARA INALAÇÃO', code:'8816', fe:1, key:'item_44' },
-    { name:'BROMOCRIPTINA MESILATO 2,5 MG COMPRIMIDO', code:'979', fe:28, key:'item_45' },
-    { name:'BUDESONIDA 200 MCG CAPSULA INALANTE', code:'1426', fe:60, key:'item_46' },
-    { name:'BUDESONIDA 400 MCG CAPSULA INALANTE', code:'2284', fe:60, key:'item_47' },
-    { name:'BUDESONIDA + FORMOTEROL 200+6 MCG CAPSULA INALANTE', code:'68', fe:60, key:'item_48' },
-    { name:'BUDESONIDA + FORMOTEROL 200+6 MCG PO PARA INALAÇÃO', code:'5025', fe:1, key:'item_49' },
-    { name:'BUDESONIDA + FORMOTEROL 400+12 MCG CAPSULA INALANTE', code:'66', fe:60, key:'item_50' },
-    { name:'BUDESONIDA + FORMOTEROL 400+12 MCG PO PARA INALAÇÃO', code:'2954', fe:1, key:'item_51' },
-    { name:'BUROSUMABE 10 MG/ML SOLUÇÃO INJETÁVEL', code:'9968', fe:1, key:'item_52' },
-    { name:'BUROSUMABE 20 MG/ML SOLUÇÃO INJETÁVEL', code:'9969', fe:1, key:'item_53' },
-    { name:'BUROSUMABE 30 MG/ML SOLUÇÃO INJETÁVEL', code:'9970', fe:1, key:'item_54' },
-    { name:'CABERGOLINA 0,5 MG COMPRIMIDO', code:'535', fe:8, key:'item_55' },
-    { name:'CALCIPOTRIOL 50 MCG/G POMADA', code:'4383', fe:1, key:'item_56' },
-    { name:'CALCITONINA 200 UI/DOSE SOLUCAO NASAL', code:'862', fe:1, key:'item_57' },
-    { name:'CALCITRIOL 0,25 MCG CAPSULA', code:'957', fe:30, key:'item_58' },
-    { name:'CALCITRIOL 1 MCG/ML INJETAVEL', code:'265', fe:3, key:'item_59' },
-    { name:'CANETA PARA APLICAÇÃO DE INSULINA ANÁLOGA DE AÇÃO PROLONGADA', code:'10081', fe:1, key:'item_60' },
-    { name:'CANETA PARA APLICAÇÃO DE INSULINA ANÁLOGA DE AÇÃO RÁPIDA', code:'8380', fe:1, key:'item_61' },
-    { name:'CERTOLIZUMABE PEGOL 200 MG/ML SOLUÇÃO INJETÁVEL', code:'3003', fe:2, key:'item_62' },
-    { name:'CICLOFOSFAMIDA 50 MG DRÁGEA', code:'2273', fe:50, key:'item_63' },
-    { name:'CICLOSPORINA 100 MG CAPSULA', code:'325', fe:50, key:'item_64' },
-    { name:'CICLOSPORINA 100 MG/ML SOLUCAO ORAL', code:'696', fe:1, key:'item_65' },
-    { name:'CICLOSPORINA 25 MG CAPSULA', code:'323', fe:50, key:'item_66' },
-    { name:'CICLOSPORINA 50 MG CAPSULA', code:'324', fe:50, key:'item_67' },
-    { name:'CINACALCETE CLORIDRATO 30 MG COMPRIMIDO REVESTIDO', code:'5606', fe:30, key:'item_68' },
-    { name:'CINACALCETE CLORIDRATO 60 MG COMPRIMIDO REVESTIDO', code:'7307', fe:30, key:'item_69' },
-    { name:'CIPROFIBRATO 100 MG COMPRIMIDO', code:'337', fe:20, key:'item_70' },
-    { name:'CIPROTERONA ACETATO 50 MG COMPRIMIDO', code:'141', fe:20, key:'item_71' },
-    { name:'CLADRIBINA 10 MG COMPRIMIDO', code:'10207', fe:1, key:'item_72' },
-    { name:'CLOBAZAM 10 MG COMPRIMIDO', code:'670', fe:20, key:'item_73' },
-    { name:'CLOBAZAM 20 MG COMPRIMIDO', code:'671', fe:20, key:'item_74' },
-    { name:'CLOBETASOL PROPIONATO 0,5 MG/G CREME DERMATOLOGICO', code:'4545', fe:1, key:'item_75' },
-    { name:'CLOBETASOL PROPIONATO 0,5 MG/G SOLUCAO CAPILAR', code:'4253', fe:1, key:'item_76' },
-    { name:'CLOPIDOGREL BISSULFATO 75 MG COMPRIMIDO REVESTIDO', code:'4284', fe:30, key:'item_77' },
-    { name:'CLORIDRATO DE OLODATEROL + BROMETO DE TIOTRÓPIO 2,5+2,5 MCG SOLUCAO PARA INALACAO', code:'9665', fe:1, key:'item_78' },
-    { name:'CLOROQUINA DIFOSFATO 250 MG (150 MG CLOROQUINA BASE) COMPRIMIDO', code:'411', fe:10, key:'item_79' },
-    { name:'CLOZAPINA 100 MG COMPRIMIDO', code:'801', fe:450, key:'item_80' },
-    { name:'CLOZAPINA 25 MG COMPRIMIDO', code:'802', fe:200, key:'item_81' },
-    { name:'CODEINA FOSFATO 3 MG/ML SOLUCAO ORAL', code:'428', fe:1, key:'item_82' },
-    { name:'CODEINA FOSFATO 30 MG COMPRIMIDO', code:'427', fe:30, key:'item_83' },
-    { name:'CODEINA FOSFATO 60 MG COMPRIMIDO', code:'429', fe:30, key:'item_84' },
-    { name:'COLISTIMETATO SODICO 1.000.000 UI SOLUCAO PARA INALACAO', code:'', fe:1, key:'item_85' },
-    { name:'COMPLEMENTO ALIMENTAR LÁCTEO ISENTO DE SACAROSE (ADOLESCENTE/ADULTO) PÓ', code:'', fe:1, key:'item_86' },
-    { name:'COMPLEMENTO ALIMENTAR P/ FENILCETONURICOS (FAIXA ETARIA A PARTIR DE 8 ANOS) PO/LATA', code:'2272', fe:1, key:'item_87' },
-    { name:'COMPLEMENTO ALIMENTAR P/ FENILCETONURICOS FORMULA DE AMINOACIDOS ISENTA DE FENILALANINA (FAIXA ETARIA 0 A 12 MESES) PO/LATA', code:'2271', fe:1, key:'item_88' },
-    { name:'COMPLEMENTO ALIMENTAR P/ FENILCETONURICOS FORMULA DE AMINOACIDOS ISENTA DE FENILALANINA (FAIXA ETARIA DE 1 A 8 ANOS) PO/LATA', code:'2270', fe:1, key:'item_89' },
-    { name:'DANAZOL 100 MG CAPSULA', code:'791', fe:50, key:'item_90' },
-    { name:'DAPAGLIFLOZINA 10 MG COMPRIMIDO REVESTIDO', code:'6370', fe:30, key:'item_91' },
-    { name:'DEFERASIROX 125 MG COMPRIMIDO PARA SUSPENSÃO', code:'1437', fe:28, key:'item_92' },
-    { name:'DEFERASIROX 250 MG COMPRIMIDO PARA SUSPENSÃO', code:'1621', fe:28, key:'item_93' },
-    { name:'DEFERASIROX 500 MG COMPRIMIDO PARA SUSPENSÃO', code:'1438', fe:28, key:'item_94' },
-    { name:'DEFERIPRONA 1000 MG COMPRIMIDO DE LIBERAÇÃO MODIFICADA', code:'', fe:1, key:'item_95' },
-    { name:'DEFERIPRONA 500 MG COMPRIMIDO', code:'1619', fe:100, key:'item_96' },
-    { name:'DESFERROXAMINA MESILATO 500 MG INJETAVEL', code:'472', fe:5, key:'item_97' },
-    { name:'DESMOPRESSINA ACETATO 0,1 MG COMPRIMIDO', code:'1674', fe:30, key:'item_98' },
-    { name:'DESMOPRESSINA ACETATO 0,1 MG/ML SOLUCAO NASAL', code:'460', fe:1, key:'item_99' },
-    { name:'DESMOPRESSINA ACETATO 0,2 MG COMPRIMIDO', code:'', fe:1, key:'item_100' },
-    { name:'DIETA ENTERAL LÍQUIDA (ADOLESCENTES/ADULTOS) 1,2 e 1,5kcal/ml (ATÉ 1,23 Kcal/ml)', code:'', fe:1, key:'item_101' },
-    { name:'DIPROPIONATO DE BECLOMETASONA + BROMETO DE GLICOPIRRÔNIO + FUMARATO DE FORMOTEROL 100,0 + 6,0 +12,5 MCG SOLUCAO AEROSSOL', code:'', fe:1, key:'item_102' },
-    { name:'DONEPEZILA CLORIDRATO 10 MG COMPRIMIDO REVESTIDO', code:'567', fe:200, key:'item_103' },
-    { name:'DONEPEZILA CLORIDRATO 5 MG COMPRIMIDO REVESTIDO', code:'566', fe:200, key:'item_104' },
-    { name:'ECULIZUMABE 10 MG/ML SOLUÇÃO INJETÁVEL', code:'', fe:1, key:'item_105' },
-    { name:'ELEXACAFTOR + TEZACAFTOR + IVACAFTOR + IVACAFTOR 100 + 50 + 75 + 150 MG COMPRIMIDO REVESTIDO', code:'', fe:1, key:'item_106' },
-    { name:'ELEXACAFTOR + TEZACAFTOR + IVACAFTOR + IVACAFTOR 50+25+37,5+75 MG COMPRIMIDO REVESTIDO', code:'', fe:1, key:'item_107' },
-    { name:'ELTROMBOPAGUE OLAMINA 25 MG COMPRIMIDO', code:'7319', fe:14, key:'item_108' },
-    { name:'ELTROMBOPAGUE OLAMINA 50 MG COMPRIMIDO', code:'7316', fe:14, key:'item_109' },
-    { name:'ENOXAPARINA SODICA 40 MG/0,4 ML (100 MG/ML), SOLUÇÃO INJETÁVEL', code:'1725', fe:10, key:'item_110' },
-    { name:'ENOXAPARINA SODICA 60 MG/0,6mL (100 MG/ML), SOLUÇÃO INJETÁVEL', code:'9735', fe:2, key:'item_111' },
-    { name:'ENTACAPONA 200 MG COMPRIMIDO REVESTIDO', code:'433', fe:30, key:'item_112' },
-    { name:'ETANERCEPTE (BIOSSIMILAR A) 50 MG PO PARA INJETAVEL', code:'9686', fe:4, key:'item_113' },
-    { name:'ETANERCEPTE (ORIGINADOR) 50 MG PO PARA INJETAVEL', code:'556', fe:4, key:'item_114' },
-    { name:'ETANERCEPTE 25 MG PO PARA INJETAVEL', code:'555', fe:4, key:'item_115' },
-    { name:'ETOSSUXIMIDA 50 MG/ML FRASCO', code:'2274', fe:1, key:'item_116' },
-    { name:'EVEROLIMO 0,5 MG COMPRIMIDO', code:'1429', fe:60, key:'item_117' },
-    { name:'EVEROLIMO 0,75 MG COMPRIMIDO', code:'2304', fe:60, key:'item_118' },
-    { name:'EVEROLIMO 1 MG COMPRIMIDO', code:'1430', fe:60, key:'item_119' },
-    { name:'FENOFIBRATO 200 MG CAPSULA', code:'824', fe:30, key:'item_120' },
-    { name:'FENOTEROL BROMIDRATO 100 MCG AEROSSOL ORAL', code:'2286', fe:1, key:'item_121' },
-    { name:'FILGRASTIM 300 MCG SOLUÇÃO INJETÁVEL', code:'806', fe:1, key:'item_122' },
-    { name:'FILTRO PARA SOLUCAO INTRAVENOSA 0', code:'6418', fe:1, key:'item_123' },
-    { name:'FINGOLIMODE CLORIDRATO 0,5 MG CAPSULA', code:'4883', fe:28, key:'item_124' },
-    { name:'FLUDROCORTISONA ACETATO 0,1 MG COMPRIMIDO', code:'651', fe:100, key:'item_125' },
-    { name:'FORMOTEROL FUMARATO 12 MCG CAPSULA INALANTE', code:'2287', fe:60, key:'item_126' },
-    { name:'FÓRMULA INFANTIL (LACTENTES/CRIANÇAS) 1,0 Kcal/ml', code:'', fe:1, key:'item_127' },
-    { name:'FÓRMULA INFANTIL EM PÓ PARA CRIANÇAS DE 6 MESES A 3 ANOS', code:'', fe:1, key:'item_128' },
-    { name:'FÓRMULA INFANTIL EM PÓ PARA LACTENTES DE 0 a 6 MESES (1° SEMESTRE)', code:'', fe:1, key:'item_129' },
-    { name:'FÓRMULA INFANTIL SEMI ELEMENTAR ISENTA DE LACTOSE E SACAROSE (DE 0 A 36 MESES)', code:'', fe:1, key:'item_130' },
-    { name:'FUMARATO DE DIMETILA 120 MG COMPRIMIDO', code:'9495', fe:14, key:'item_131' },
-    { name:'FUMARATO DE DIMETILA 240 MG CÁPSULA DURA DE LIBERAÇÃO RETARDADA', code:'9496', fe:56, key:'item_132' },
-    { name:'FUROATO DE FLUTICASONA + BROMETO DE UMECLIDÍNIO + TRIFENATATO DE VILANTEROL 100 + 62,5 + 25 MCG PO PARA INALAÇÃO', code:'9839', fe:1, key:'item_133' },
-    { name:'GABAPENTINA 300 MG CÁPSULA DURA', code:'682', fe:60, key:'item_134' },
-    { name:'GABAPENTINA 400 MG CÁPSULA DURA', code:'681', fe:300, key:'item_135' },
-    { name:'GALANTAMINA HIDROBROMETO 16 MG CAPSULA DE LIBERACAO CONTROLADA', code:'1046', fe:30, key:'item_136' },
-    { name:'GALANTAMINA HIDROBROMETO 24 MG CAPSULA DE LIBERACAO CONTROLADA', code:'1047', fe:30, key:'item_137' },
-    { name:'GALANTAMINA HIDROBROMETO 8 MG CAPSULA DE LIBERACAO CONTROLADA', code:'1048', fe:30, key:'item_138' },
-    { name:'GALSULFASE 1 MG/ML SOLUÇÃO INJETÁVEL', code:'897', fe:1, key:'item_139' },
-    { name:'GANCICLOVIR SODICO 1 MG/ML (250 MG BOLSA FECHADA) SOLUÇÃO INJETÁVEL', code:'2232', fe:1, key:'item_140' },
-    { name:'GANCICLOVIR SODICO 500 MG PÓ LIOFÍLICO PARA INJETÁVEL', code:'688', fe:1, key:'item_141' },
-    { name:'GENFIBROZILA 900 MG COMPRIMIDO', code:'695', fe:12, key:'item_142' },
-    { name:'GLATIRAMER ACETATO 20 MG/ML SOLUÇÃO INJETÁVEL', code:'436', fe:28, key:'item_143' },
-    { name:'GLATIRAMER ACETATO 40 MG/ML SOLUÇÃO INJETÁVEL', code:'9609', fe:12, key:'item_144' },
-    { name:'GOLIMUMABE 50 MG SOLUÇÃO INJETÁVEL', code:'3001', fe:1, key:'item_145' },
-    { name:'GOSSERRELINA ACETATO 10,8 MG SOLUÇÃO INJETÁVEL', code:'1664', fe:1, key:'item_146' },
-    { name:'GOSSERRELINA ACETATO 3,6 MG SOLUÇÃO INJETÁVEL', code:'1665', fe:1, key:'item_147' },
-    { name:'HIDROXICLOROQUINA SULFATO 400 MG COMPRIMIDO', code:'998', fe:30, key:'item_148' },
-    { name:'HIDROXIUREIA 100 MG COMPRIMIDO REVESTIDO', code:'10272', fe:60, key:'item_149' },
-    { name:'HIDROXIUREIA 500 MG CAPSULA', code:'758', fe:100, key:'item_150' },
-    { name:'IDURSULFASE 2 MG/ML SOLUÇÃO INJETÁVEL', code:'8696', fe:1, key:'item_151' },
-    { name:'ILOPROSTA 10 MCG/ML SOLUCAO PARA NEBULIZACAO', code:'2289', fe:30, key:'item_152' },
-    { name:'IMIGLUCERASE 400 UI PO PARA INJETAVEL', code:'2340', fe:1, key:'item_153' },
-    { name:'IMUNOGLOBULINA HUMANA 1 G SOLUÇÃO INJETÁVEL', code:'1236', fe:1, key:'item_154' },
-    { name:'IMUNOGLOBULINA HUMANA 2,5 G SOLUÇÃO INJETÁVEL', code:'1439', fe:1, key:'item_155' },
-    { name:'IMUNOGLOBULINA HUMANA 5 G SOLUÇÃO INJETÁVEL', code:'648', fe:1, key:'item_156' },
-    { name:'INFLIXIMABE (BIOSSIMILAR) 10 MG/ML PO PARA INJETAVEL', code:'9930', fe:1, key:'item_157' },
-    { name:'INFLIXIMABE (ORIGINADOR) 10 MG/ML PO PARA INJETAVEL', code:'1045', fe:1, key:'item_158' },
-    { name:'INSULINA ANÁLOGA DE AÇÃO PROLONGADA 100 UI/ML (FR) SOLUÇÃO INJETÁVEL', code:'2277', fe:1, key:'item_159' },
-    { name:'INSULINA ANÁLOGA DE AÇÃO PROLONGADA 100 UI/ML (RF/CANETA) SOLUÇÃO INJETÁVEL', code:'797', fe:1, key:'item_160' },
-    { name:'INSULINA ANÁLOGA DE AÇÃO RÁPIDA (SISTEMA DE APLICAÇÃO DESCARTÁVEL) 100 UI/ML SOLUÇÃO INJETÁVEL', code:'10025', fe:5, key:'item_161' },
-    { name:'INSULINA ANÁLOGA DE AÇÃO RÁPIDA (TUBETES COM SISTEMA DE APLICAÇÃO REUTILIZÁVEL) 100 UI/ML SOLUÇÃO INJETÁVEL', code:'948', fe:5, key:'item_162' },
-    { name:'INSULINA ANÁLOGA DE AÇÃO RÁPIDA ASPARTE (CRIANÇAS MENORES DE 4 ANOS E GRÁVIDAS) 100 UI/ML SOLUÇÃO INJETÁVEL', code:'9822', fe:5, key:'item_163' },
-    { name:'IPRATROPIO BROMETO 20 MCG AEROSSOL ORAL', code:'2334', fe:1, key:'item_164' },
-    { name:'ISOTRETINOINA 10 MG CAPSULA', code:'294', fe:30, key:'item_165' },
-    { name:'ISOTRETINOINA 20 MG CAPSULA', code:'779', fe:10, key:'item_166' },
-    { name:'IVACAFTOR 150 MG COMPRIMIDO REVESTIDO', code:'', fe:1, key:'item_167' },
-    { name:'KIT INFUSAO ABATACEPTE', code:'3007', fe:1, key:'item_168' },
-    { name:'KIT PARA INFUSÁO INFLIXIMABE', code:'3006', fe:1, key:'item_169' },
-    { name:'LAMIVUDINA 10 MG/ML SOLUCAO ORAL', code:'564', fe:1, key:'item_170' },
-    { name:'LAMIVUDINA 150 MG COMPRIMIDO', code:'563', fe:60, key:'item_171' },
-    { name:'LAMOTRIGINA 100 MG COMPRIMIDO', code:'793', fe:200, key:'item_172' },
-    { name:'LAMOTRIGINA 25 MG COMPRIMIDO', code:'794', fe:30, key:'item_173' },
-    { name:'LAMOTRIGINA 50 MG COMPRIMIDO', code:'795', fe:20, key:'item_174' },
-    { name:'LANREOTIDA 120 MG SOLUÇÃO INJETÁVEL', code:'4950', fe:1, key:'item_175' },
-    { name:'LANREOTIDA 60 MG SOLUÇÃO INJETÁVEL', code:'4947', fe:1, key:'item_176' },
-    { name:'LANREOTIDA 90 MG SOLUÇÃO INJETÁVEL', code:'4948', fe:1, key:'item_177' },
-    { name:'LARONIDASE 0,58 MG/ML SOLUÇÃO INJETÁVEL', code:'63', fe:1, key:'item_178' },
-    { name:'LEFLUNOMIDA 20 MG COMPRIMIDO', code:'158', fe:30, key:'item_179' },
-    { name:'LEUPRORRELINA ACETATO 11,25 MG PÓ LIOFÍLICO PARA INJETÁVEL', code:'1623', fe:1, key:'item_180' },
-    { name:'LEUPRORRELINA ACETATO 3,75 MG PÓ LIOFÍLICO PARA INJETÁVEL', code:'799', fe:1, key:'item_181' },
-    { name:'LEUPRORRELINA ACETATO 45 MG PÓ LIOFÍLICO PARA INJETÁVEL', code:'10044', fe:1, key:'item_182' },
-    { name:'LEVETIRACETAM 100 MG/ML (FR 100 ML) SOLUCAO ORAL', code:'8815', fe:1, key:'item_183' },
-    { name:'LEVETIRACETAM 100 MG/ML (FR 150 ML) SOLUCAO ORAL', code:'9676', fe:1, key:'item_184' },
-    { name:'LEVETIRACETAM 1000 MG COMPRIMIDO REVESTIDO', code:'9649', fe:30, key:'item_185' },
-    { name:'LEVETIRACETAM 250 MG COMPRIMIDO REVESTIDO', code:'6663', fe:30, key:'item_186' },
-    { name:'LEVETIRACETAM 500 MG COMPRIMIDO REVESTIDO', code:'6314', fe:30, key:'item_187' },
-    { name:'LEVETIRACETAM 750 MG COMPRIMIDO REVESTIDO', code:'8027', fe:30, key:'item_188' },
-    { name:'LINEZOLIDA 600 MG COMPRIMIDO REVESTIDO', code:'', fe:1, key:'item_189' },
-    { name:'MEMANTINA CLORIDRATO 10 MG COMPRIMIDO REVESTIDO', code:'1626', fe:200, key:'item_190' },
-    { name:'MEPOLIZUMABE 100 MG/ML SOLUÇÃO INJETÁVEL', code:'9664', fe:1, key:'item_191' },
-    { name:'MESALAZINA 1000 MG SUPOSITORIO', code:'985', fe:28, key:'item_192' },
-    { name:'MESALAZINA 2000 MG (2G) GRANULADO REVESTIDO DE LIBERAÇÃO PROLONGADA', code:'9997', fe:30, key:'item_193' },
-    { name:'MESALAZINA 250 MG SUPOSITORIO', code:'167', fe:15, key:'item_194' },
-    { name:'MESALAZINA 400 MG COMPRIMIDO REVESTIDO', code:'318', fe:30, key:'item_195' },
-    { name:'MESALAZINA 500 MG COMPRIMIDO REVESTIDO', code:'319', fe:50, key:'item_196' },
-    { name:'MESALAZINA 800 MG COMPRIMIDO REVESTIDO', code:'320', fe:30, key:'item_197' },
-    { name:'METADONA 10 MG COMPRIMIDO', code:'1452', fe:20, key:'item_198' },
-    { name:'METADONA CLORIDRATO 10 MG/ML SOLUÇÃO INJETÁVEL', code:'', fe:1, key:'item_199' },
-    { name:'METADONA CLORIDRATO 5 MG COMPRIMIDO', code:'895', fe:20, key:'item_200' },
-    { name:'METOTREXATO 2,5 MG COMPRIMIDO', code:'2293', fe:20, key:'item_201' },
-    { name:'METOTREXATO 25 MG/ML SOLUÇÃO INJETÁVEL', code:'240', fe:5, key:'item_202' },
-    { name:'MICOFENOLATO DE SODIO 180 MG COMPRIMIDO', code:'888', fe:120, key:'item_203' },
-    { name:'MICOFENOLATO DE SODIO 360 MG COMPRIMIDO', code:'887', fe:100, key:'item_204' },
-    { name:'MICOFENOLATO MOFETILA 500 MG COMPRIMIDO', code:'307', fe:500, key:'item_205' },
-    { name:'MIGLUSTATE 100 MG CAPSULA', code:'2639', fe:90, key:'item_206' },
-    { name:'MINOCICLINA CLORIDRATO 100 MG COMPRIMIDO REVESTIDO', code:'398', fe:10, key:'item_207' },
-    { name:'MORFINA LC SULFATO PENTAIDRATADO 100 MG CAPSULA DE LIBERACAO CONTROLADA', code:'885', fe:60, key:'item_208' },
-    { name:'MORFINA LC SULFATO PENTAIDRATADO 30 MG CAPSULA DE LIBERACAO CONTROLADA', code:'883', fe:100, key:'item_209' },
-    { name:'MORFINA LC SULFATO PENTAIDRATADO 60 MG CAPSULA DE LIBERACAO CONTROLADA', code:'884', fe:60, key:'item_210' },
-    { name:'MORFINA SULFATO 10 MG COMPRIMIDO', code:'502', fe:50, key:'item_211' },
-    { name:'MORFINA SULFATO 10 MG/ML SOLUÇÃO INJETÁVEL', code:'504', fe:100, key:'item_212' },
-    { name:'MORFINA SULFATO 10 MG/ML SOLUCAO ORAL', code:'507', fe:1, key:'item_213' },
-    { name:'MORFINA SULFATO 100 MG CAPSULA', code:'', fe:1, key:'item_214' },
-    { name:'MORFINA SULFATO 30 MG COMPRIMIDO', code:'503', fe:50, key:'item_215' },
-    { name:'NAPROXENO 250 MG COMPRIMIDO', code:'2564', fe:24, key:'item_216' },
-    { name:'NAPROXENO 500 MG COMPRIMIDO', code:'1860', fe:24, key:'item_217' },
-    { name:'NATALIZUMABE 300 MG SOLUÇÃO INJETÁVEL', code:'2493', fe:1, key:'item_218' },
-    { name:'NINTEDANIBE 150 MG CÁPSULA MOLE', code:'7331', fe:60, key:'item_219' },
-    { name:'NUSINERSENA 2,4 MG/ML (12MG/5ML) SOLUÇÃO INJETÁVEL', code:'', fe:1, key:'item_220' },
-    { name:'OCTREOTIDA ACETATO 0,1 MG/ML SOLUÇÃO INJETÁVEL', code:'1454', fe:5, key:'item_221' },
-    { name:'OCTREOTIDA LAR 10 MG PÓ PARA SUSPENSÃO INJETÁVEL', code:'1078', fe:1, key:'item_222' },
-    { name:'OCTREOTIDA LAR 20 MG PÓ PARA SUSPENSÃO INJETÁVEL', code:'1079', fe:1, key:'item_223' },
-    { name:'OCTREOTIDA LAR 30 MG PÓ PARA SUSPENSÃO INJETÁVEL', code:'1080', fe:1, key:'item_224' },
-    { name:'OLANZAPINA 10 MG COMPRIMIDO', code:'951', fe:30, key:'item_225' },
-    { name:'OLANZAPINA 5 MG COMPRIMIDO', code:'950', fe:30, key:'item_226' },
-    { name:'OMALIZUMABE 150 MG SOLUÇÃO INJETÁVEL', code:'1250', fe:1, key:'item_227' },
-    { name:'PANCREATINA 10.000 UI (150 MG) CÁPSULA DURA', code:'2294', fe:30, key:'item_228' },
-    { name:'PANCREATINA 25.000 UI (300 MG) CÁPSULA DURA', code:'2295', fe:30, key:'item_229' },
-    { name:'PARICALCITOL 5 MCG/ML SOLUÇÃO INJETÁVEL', code:'7443', fe:5, key:'item_230' },
-    { name:'PENICILAMINA 250 MG CAPSULA', code:'453', fe:100, key:'item_231' },
-    { name:'PIRFENIDONA 267 MG CAPSULA', code:'8549', fe:270, key:'item_232' },
-    { name:'PIRIDOSTIGMINA BROMETO 60 MG COMPRIMIDO', code:'855', fe:60, key:'item_233' },
-    { name:'PRAMIPEXOL DICLORIDRATO 0,125 MG (0,088 MG DE PRAMIPEXOL) COMPRIMIDO', code:'1106', fe:10, key:'item_234' },
-    { name:'PRAMIPEXOL DICLORIDRATO 0,25 MG (0,18 MG DE PRAMIPEXOL) COMPRIMIDO', code:'1107', fe:10, key:'item_235' },
-    { name:'PRAMIPEXOL DICLORIDRATO 1,0 MG (0,7 MG DE PRAMIPEXOL) COMPRIMIDO', code:'1108', fe:300, key:'item_236' },
-    { name:'PRIMIDONA 100 MG COMPRIMIDO', code:'1017', fe:100, key:'item_237' },
-    { name:'QUETIAPINA HEMIFUMARATO 100 MG COMPRIMIDO', code:'1101', fe:30, key:'item_238' },
-    { name:'QUETIAPINA HEMIFUMARATO 200 MG COMPRIMIDO', code:'1102', fe:28, key:'item_239' },
-    { name:'QUETIAPINA HEMIFUMARATO 25 MG COMPRIMIDO', code:'1103', fe:30, key:'item_240' },
-    { name:'QUETIAPINA HEMIFUMARATO 300 MG COMPRIMIDO', code:'2296', fe:200, key:'item_241' },
-    { name:'RALOXIFENO CLORIDRATO 60 MG COMPRIMIDO REVESTIDO', code:'612', fe:30, key:'item_242' },
-    { name:'RASAGILINA 1 MG COMPRIMIDO', code:'194', fe:30, key:'item_243' },
-    { name:'RIFAMPICINA 20 MG/ML SUSPENSAO ORAL', code:'880', fe:50, key:'item_244' },
-    { name:'RIFAMPICINA 300 MG CÁPSULA DURA', code:'879', fe:10, key:'item_245' },
-    { name:'RILUZOL 50 MG COMPRIMIDO REVESTIDO', code:'1058', fe:28, key:'item_246' },
-    { name:'RISANQUIZUMABE 150 MG/ML SOLUÇÃO INJETÁVEL', code:'10253', fe:1, key:'item_247' },
-    { name:'RISANQUIZUMABE 75 MG/ 0,83 ML SOLUÇÃO INJETÁVEL', code:'9896', fe:2, key:'item_248' },
-    { name:'RISDIPLAM 0,75 MG/ML PÓ PARA SOLUÇÃO ORAL', code:'', fe:1, key:'item_249' },
-    { name:'RISEDRONATO SODICO 35 MG COMPRIMIDO REVESTIDO', code:'1266', fe:12, key:'item_250' },
-    { name:'RISPERIDONA 1 MG COMPRIMIDO REVESTIDO', code:'1059', fe:300, key:'item_251' },
-    { name:'RISPERIDONA 1 MG/ML SOLUCAO ORAL', code:'2558', fe:1, key:'item_252' },
-    { name:'RISPERIDONA 2 MG COMPRIMIDO REVESTIDO', code:'1060', fe:300, key:'item_253' },
-    { name:'RITUXIMABE (BIOSSIMILAR A) 500 MG INJETÁVEL (POR FRASCO-AMPOLA DE 50 ML)', code:'9695', fe:1, key:'item_254' },
-    { name:'RITUXIMABE (BIOSSIMILAR B) 100 MG INJETÁVEL (POR FRASCO-AMPOLA DE 10 ML)', code:'', fe:1, key:'item_255' },
-    { name:'RITUXIMABE (BIOSSIMILAR B) 500 MG INJETÁVEL (POR FRASCO-AMPOLA DE 50 ML)', code:'10292', fe:1, key:'item_256' },
-    { name:'RITUXIMABE (ORIGINADOR) 500 MG INJETÁVEL (POR FRASCO-AMPOLA DE 50 ML)', code:'839', fe:1, key:'item_257' },
-    { name:'RIVASTIGMINA 18 MG MG ADESIVO TRANSDERMICO', code:'2943', fe:30, key:'item_258' },
-    { name:'RIVASTIGMINA 2 MG/ML SOLUCAO ORAL', code:'1030', fe:1, key:'item_259' },
-    { name:'RIVASTIGMINA 9 MG ADESIVO TRANSDERMICO', code:'5027', fe:30, key:'item_260' },
-    { name:'RIVASTIGMINA HEMITARTARATO 4,5 MG CÁPSULA DURA', code:'1436', fe:30, key:'item_261' },
-    { name:'RIVASTIGMINA HEMITARTARATO 6,0 MG CÁPSULA DURA', code:'1029', fe:30, key:'item_262' },
-    { name:'ROMOSOZUMABE 90 MG/ML SOLUÇÃO INJETÁVEL', code:'9852', fe:2, key:'item_263' },
-    { name:'SACARATO DE HIDROXIDO FERRICO 20 MG/ML SOLUÇÃO INJETÁVEL', code:'2297', fe:50, key:'item_264' },
-    { name:'SACUBITRIL VALSARTANA SÓDICA HIDRATADA 100 MG COMPRIMIDO', code:'8902', fe:60, key:'item_265' },
-    { name:'SACUBITRIL VALSARTANA SÓDICA HIDRATADA 200 MG COMPRIMIDO', code:'8903', fe:60, key:'item_266' },
-    { name:'SACUBITRIL VALSARTANA SÓDICA HIDRATADA 50 MG COMPRIMIDO', code:'8901', fe:28, key:'item_267' },
-    { name:'SALMETEROL + FLUTICASONA 25+125 MCG SUSPENSAO COM PROPELENTE', code:'1098', fe:1, key:'item_268' },
-    { name:'SALMETEROL + FLUTICASONA 25+250 MCG SUSPENSAO COM PROPELENTE', code:'1099', fe:1, key:'item_269' },
-    { name:'SALMETEROL + FLUTICASONA 50+250 MCG PO PARA INALAÇÃO', code:'1097', fe:1, key:'item_270' },
-    { name:'SALMETEROL XINAFOATO 50 MCG PO PARA INALAÇÃO', code:'1100', fe:1, key:'item_271' },
-    { name:'SAPROPTERINA DICLORIDRATO 100 MG COMPRIMIDO', code:'9557', fe:30, key:'item_272' },
-    { name:'SECUQUINUMABE 150 MG/ML PÓ PARA SOLUÇÃO INJETÁVEL', code:'8558', fe:1, key:'item_273' },
-    { name:'SELEGILINA CLORIDRATO 5 MG COMPRIMIDO', code:'402', fe:50, key:'item_274' },
-    { name:'SEVELAMER CLORIDRATO 800 MG COMPRIMIDO', code:'1050', fe:180, key:'item_275' },
-    { name:'SILDENAFILA CITRATO 20 MG COMPRIMIDO REVESTIDO', code:'1053', fe:60, key:'item_276' },
-    { name:'SILDENAFILA CITRATO 25 MG COMPRIMIDO REVESTIDO', code:'1229', fe:8, key:'item_277' },
-    { name:'SILDENAFILA CITRATO 50 MG COMPRIMIDO REVESTIDO', code:'1226', fe:10, key:'item_278' },
-    { name:'SIROLIMO 1 MG DRÁGEA', code:'1041', fe:60, key:'item_279' },
-    { name:'SIROLIMO 2 MG DRÁGEA', code:'1042', fe:30, key:'item_280' },
-    { name:'SOMATROPINA 12 UI PÓ LIOFÍLICO PARA INJETÁVEL', code:'751', fe:1, key:'item_281' },
-    { name:'SOMATROPINA 4 UI PÓ LIOFÍLICO PARA INJETÁVEL', code:'239', fe:1, key:'item_282' },
-    { name:'SULFASSALAZINA 500 MG COMPRIMIDO REVESTIDO', code:'200', fe:60, key:'item_283' },
-    { name:'SUPLEMENTO DE CARBOIDRATO À BASE DE MALTODEXTRINA (100% MALTODEXTRINA PURA) PÓ SOLUVEL', code:'', fe:1, key:'item_284' },
-    { name:'SUPLEMENTO DE EMULSÃO LIPÍDICA', code:'', fe:1, key:'item_285' },
-    { name:'SUPLEMENTO HIPERCALÓRICO LÍQUIDO ATÉ 2 KCal/ml (embalagem &#8804', code:'', fe:1, key:'item_286' },
-    { name:'SUPLEMENTO PEDIÁTRICO (A PARTIR 12 MESES) NORMOCALÓRICA,NORMOPROTÉICA OU HIPERPROTEICA PÓ SOLUVEL', code:'9916', fe:1, key:'item_287' },
-    { name:'TACROLIMO 1 MG CÁPSULA DURA', code:'638', fe:250, key:'item_288' },
-    { name:'TACROLIMO 5 MG CÁPSULA DURA', code:'639', fe:10, key:'item_289' },
-    { name:'TAFAMIDIS 20 MG CAPSULA', code:'9497', fe:30, key:'item_290' },
-    { name:'TAFAMIDIS 61 MG CÁPSULA MOLE', code:'10293', fe:30, key:'item_291' },
-    { name:'TERIFLUNOMIDA 14 MG COMPRIMIDO', code:'7343', fe:30, key:'item_292' },
-    { name:'TIOTROPIO BROMETO 2,5 MCG SOLUCAO PARA INALACAO', code:'2784', fe:1, key:'item_293' },
-    { name:'TOBRAMICINA 60 MG/ML (300MG/5ML) SOLUCAO PARA INALACAO', code:'', fe:1, key:'item_294' },
-    { name:'TOCILIZUMABE 20 MG/ML SOLUÇÃO INJETÁVEL', code:'3002', fe:1, key:'item_295' },
-    { name:'TOFACITINIBE 5 MG COMPRIMIDO REVESTIDO', code:'7037', fe:60, key:'item_296' },
-    { name:'TOPIRAMATO 100 MG COMPRIMIDO', code:'96', fe:60, key:'item_297' },
-    { name:'TOPIRAMATO 25 MG COMPRIMIDO', code:'1177', fe:12, key:'item_298' },
-    { name:'TOPIRAMATO 50 MG COMPRIMIDO', code:'1178', fe:60, key:'item_299' },
-    { name:'TOXINA BOTULINICA TIPO A 100 UI FRASCO-AMPOLA', code:'245', fe:1, key:'item_300' },
-    { name:'TOXINA BOTULINICA TIPO A 500 UI FRASCO-AMPOLA', code:'543', fe:1, key:'item_301' },
-    { name:'TRIENTINA 250 MG CAPSULA', code:'2312', fe:100, key:'item_302' },
-    { name:'TRIEXIFENIDILA CLORIDRATO 5 MG COMPRIMIDO', code:'166', fe:30, key:'item_303' },
-    { name:'TRIPTORRELINA 11,25 MG SUSPENSAO INJETAVEL', code:'9687', fe:1, key:'item_304' },
-    { name:'TRIPTORRELINA 22,5 MG PÓ LIOFILIZADO PARA INJETÁVEL', code:'10003', fe:1, key:'item_305' },
-    { name:'TRIPTORRELINA 3,75 MG SUSPENSAO INJETAVEL', code:'9688', fe:1, key:'item_306' },
-    { name:'UMECLIDÍNIO BROMETO 62,5 MCG PO PARA INALAÇÃO', code:'9980', fe:1, key:'item_307' },
-    { name:'UPADACITINIBE 15 MG COMPRIMIDO REVESTIDO DE LIBERAÇÃO PROLONGADA', code:'9895', fe:30, key:'item_308' },
-    { name:'USTEQUINUMABE 45 MG (0,5 ML) SOLUÇÃO INJETÁVEL(BIOSSIMILAR)', code:'7633', fe:1, key:'item_309' },
-    { name:'USTEQUINUMABE 45 MG (0,5 ML) SOLUÇÃO INJETÁVEL(ORIGINADOR)', code:'7633', fe:1, key:'item_310' },
-    { name:'VEDOLIZUMABE 300 MG PÓ LIOFILIZADO PARA INJETÁVEL', code:'9456', fe:1, key:'item_311' },
-    { name:'VIGABATRINA 500 MG COMPRIMIDO', code:'1073', fe:60, key:'item_312' },
-    { name:'ZIPRASIDONA CLORIDRATO MONOIDRATADO 40 MG CAPSULA', code:'708', fe:28, key:'item_313' },
-    { name:'ZIPRASIDONA CLORIDRATO MONOIDRATADO 80 MG CAPSULA', code:'710', fe:28, key:'item_314' },  ];
+    { name:'ABATACEPTE 125 MG/ML SOLUÇÃO INJETÁVEL', code:'6833', fe:1, key:'item_0', term:'FRIO' },
+    { name:'ABATACEPTE 250 MG PÓ LIOFÍLICO PARA INJETÁVEL', code:'3004', fe:1, key:'item_1', term:'FRIO' },
+    { name:'ACIDO URSODESOXICOLICO 150 MG COMPRIMIDO', code:'1213', fe:30, key:'item_2', term:'AMB' },
+    { name:'ACIDO URSODESOXICOLICO 300 MG COMPRIMIDO', code:'1214', fe:30, key:'item_3', term:'AMB' },
+    { name:'ACIDO ZOLEDRONICO 0,05 MG/ML (POR FRASCO/BOLSA DE 100 ML) SOLUÇÃO INJETÁVEL', code:'5988', fe:1, key:'item_4', term:'AMB' },
+    { name:'ACITRETINA 10 MG CAPSULA', code:'914', fe:100, key:'item_5', term:'AMB' },
+    { name:'ACITRETINA 25 MG CAPSULA', code:'915', fe:100, key:'item_6', term:'AMB' },
+    { name:'ADALIMUMABE 40 MG (BIOSSIMILAR B) SOLUÇÃO INJETÁVEL (SERINGA PREENCHIDA)', code:'9966', fe:2, key:'item_7', term:'FRIO' },
+    { name:'ADALIMUMABE 40 MG (ORIGINADOR) SOLUÇÃO INJETÁVEL (SERINGA PREENCHIDA)', code:'753', fe:2, key:'item_8', term:'FRIO' },
+    { name:'ÁGUA DESTILADA, BIDESTILADA, ESTÉRIL, APIROGÊNICA BOLSA OU FRASCO 100 ML', code:'', fe:1, key:'item_9', term:'AMB' },
+    { name:'AGULHA PARA CANETA APLICADORA DE INSULINA NPH/REGULAR/AÇÃO RÁPIDA/AÇÃO PROLONGADA', code:'9596', fe:100, key:'item_10', term:'AMB' },
+    { name:'ALENTUZUMABE 10 MG/ML SOLUÇÃO INJETÁVEL', code:'7664', fe:1, key:'item_11', term:'FRIO' },
+    { name:'ALFA-ALGLICOSIDASE 50 MG PÓ LIOFÍLICO PARA INJETÁVEL', code:'7653', fe:1, key:'item_12', term:'FRIO' },
+    { name:'ALFADORNASE 2,5 MG SOLUCAO PARA INALACAO', code:'1034', fe:6, key:'item_13', term:'AMB' },
+    { name:'ALFAELOSULFASE 1 MG/ML SOLUÇÃO PARA DILUIÇÃO PARA INFUSÃO', code:'9718', fe:1, key:'item_14', term:'FRIO' },
+    { name:'ALFAEPOETINA (ERITROPOETINA) 1.000 UI SOLUÇÃO INJETÁVEL', code:'571', fe:12, key:'item_15', term:'FRIO' },
+    { name:'ALFAEPOETINA (ERITROPOETINA) 10.000 UI SOLUÇÃO INJETÁVEL', code:'1340', fe:10, key:'item_16', term:'FRIO' },
+    { name:'ALFAEPOETINA (ERITROPOETINA) 2.000 UI SOLUÇÃO INJETÁVEL', code:'574', fe:12, key:'item_17', term:'FRIO' },
+    { name:'ALFAEPOETINA (ERITROPOETINA) 3.000 UI SOLUÇÃO INJETÁVEL', code:'575', fe:20, key:'item_18', term:'FRIO' },
+    { name:'ALFAEPOETINA (ERITROPOETINA) 4.000 UI SOLUÇÃO INJETÁVEL', code:'576', fe:1, key:'item_19', term:'FRIO' },
+    { name:'ALFAGALSIDASE 1 MG/ML SOLUÇÃO INJETÁVEL', code:'9594', fe:1, key:'item_20', term:'FRIO' },
+    { name:'ALFAINTERFERONA 2B 3.000.000 UI SOLUÇÃO INJETÁVEL', code:'81', fe:1, key:'item_21', term:'AMB' },
+    { name:'ALFAINTERFERONA 2B 5.000.000 UI SOLUÇÃO INJETÁVEL', code:'767', fe:1, key:'item_22', term:'AMB' },
+    { name:'ALFATALIGLICERASE 200 UI PÓ LIOFÍLICO PARA INJETÁVEL', code:'6126', fe:1, key:'item_23', term:'FRIO' },
+    { name:'ALFAVELAGLICERASE 400 UI PÓ LIOFÍLICO PARA INJETÁVEL', code:'6128', fe:1, key:'item_24', term:'FRIO' },
+    { name:'ALFAVESTRONIDASE 10 MG SOLUÇÃO INJETÁVEL', code:'', fe:1, key:'item_25', term:'FRIO' },
+    { name:'AMANTADINA 100 MG COMPRIMIDO', code:'844', fe:30, key:'item_26', term:'AMB' },
+    { name:'AMBRISENTANA 10 MG COMPRIMIDO REVESTIDO', code:'4214', fe:30, key:'item_27', term:'AMB' },
+    { name:'AMBRISENTANA 5 MG COMPRIMIDO REVESTIDO', code:'4213', fe:30, key:'item_28', term:'AMB' },
+    { name:'ATORVASTATINA CALCICA 10 MG COMPRIMIDO', code:'339', fe:90, key:'item_29', term:'AMB' },
+    { name:'ATORVASTATINA CALCICA 20 MG COMPRIMIDO', code:'340', fe:90, key:'item_30', term:'AMB' },
+    { name:'ATORVASTATINA CALCICA 80 MG COMPRIMIDO', code:'342', fe:30, key:'item_31', term:'AMB' },
+    { name:'AZATIOPRINA 50 MG COMPRIMIDO', code:'1019', fe:100, key:'item_32', term:'AMB' },
+    { name:'BARICITINIBE 2 MG COMPRIMIDO REVESTIDO', code:'9814', fe:30, key:'item_33', term:'AMB' },
+    { name:'BARICITINIBE 4 MG COMPRIMIDO REVESTIDO', code:'9815', fe:30, key:'item_34', term:'AMB' },
+    { name:'BETAINTERFERONA 1A 12.000.000 UI (44 MCG) SOLUÇÃO INJETÁVEL (SERINGA PREENCHIDA)', code:'1043', fe:12, key:'item_35', term:'FRIO' },
+    { name:'BETAINTERFERONA 1A 6.000.000 UI (22 MCG) SOLUÇÃO INJETÁVEL (SERINGA PREENCHIDA)', code:'1044', fe:12, key:'item_36', term:'FRIO' },
+    { name:'BETAINTERFERONA 1A 6.000.000 UI (30 MCG/0,5 ML) PÓ LIOFÍLICO PARA INJETÁVEL', code:'2283', fe:4, key:'item_37', term:'FRIO' },
+    { name:'BETAINTERFERONA 1B 9.600.000 UI (300 MCG) PÓ LIOFÍLICO PARA INJETÁVEL (FRASCO-AMPOLA)', code:'2282', fe:1, key:'item_38', term:'AMB' },
+    { name:'BEZAFIBRATO 200 MG COMPRIMIDO', code:'297', fe:20, key:'item_39', term:'AMB' },
+    { name:'BIOTINA 2,5 MG CÁPSULA', code:'', fe:1, key:'item_40', term:'AMB' },
+    { name:'BOSENTANA 125 MG COMPRIMIDO', code:'1183', fe:60, key:'item_41', term:'AMB' },
+    { name:'BOSENTANA 62,5 MG COMPRIMIDO', code:'1182', fe:60, key:'item_42', term:'AMB' },
+    { name:'BROMETO DE GLICOPIRRÔNIO 50 MCG CAPSULA INALANTE', code:'8083', fe:30, key:'item_43', term:'AMB' },
+    { name:'BROMETO DE UMECLIDÍNIO + TRIFENATATO DE VILANTEROL 62,5+25 MCG PO PARA INALAÇÃO', code:'8816', fe:1, key:'item_44', term:'AMB' },
+    { name:'BROMOCRIPTINA MESILATO 2,5 MG COMPRIMIDO', code:'979', fe:28, key:'item_45', term:'AMB' },
+    { name:'BUDESONIDA 200 MCG CAPSULA INALANTE', code:'1426', fe:60, key:'item_46', term:'AMB' },
+    { name:'BUDESONIDA 400 MCG CAPSULA INALANTE', code:'2284', fe:60, key:'item_47', term:'AMB' },
+    { name:'BUDESONIDA + FORMOTEROL 200+6 MCG CAPSULA INALANTE', code:'68', fe:60, key:'item_48', term:'AMB' },
+    { name:'BUDESONIDA + FORMOTEROL 200+6 MCG PO PARA INALAÇÃO', code:'5025', fe:1, key:'item_49', term:'AMB' },
+    { name:'BUDESONIDA + FORMOTEROL 400+12 MCG CAPSULA INALANTE', code:'66', fe:60, key:'item_50', term:'AMB' },
+    { name:'BUDESONIDA + FORMOTEROL 400+12 MCG PO PARA INALAÇÃO', code:'2954', fe:1, key:'item_51', term:'AMB' },
+    { name:'BUROSUMABE 10 MG/ML SOLUÇÃO INJETÁVEL', code:'9968', fe:1, key:'item_52', term:'FRIO' },
+    { name:'BUROSUMABE 20 MG/ML SOLUÇÃO INJETÁVEL', code:'9969', fe:1, key:'item_53', term:'FRIO' },
+    { name:'BUROSUMABE 30 MG/ML SOLUÇÃO INJETÁVEL', code:'9970', fe:1, key:'item_54', term:'FRIO' },
+    { name:'CABERGOLINA 0,5 MG COMPRIMIDO', code:'535', fe:8, key:'item_55', term:'AMB' },
+    { name:'CALCIPOTRIOL 50 MCG/G POMADA', code:'4383', fe:1, key:'item_56', term:'AMB' },
+    { name:'CALCITONINA 200 UI/DOSE SOLUCAO NASAL', code:'862', fe:1, key:'item_57', term:'FRIO' },
+    { name:'CALCITRIOL 0,25 MCG CAPSULA', code:'957', fe:30, key:'item_58', term:'AMB' },
+    { name:'CALCITRIOL 1 MCG/ML INJETAVEL', code:'265', fe:3, key:'item_59', term:'AMB' },
+    { name:'CANETA PARA APLICAÇÃO DE INSULINA ANÁLOGA DE AÇÃO PROLONGADA', code:'10081', fe:1, key:'item_60', term:'FRIO' },
+    { name:'CANETA PARA APLICAÇÃO DE INSULINA ANÁLOGA DE AÇÃO RÁPIDA', code:'8380', fe:1, key:'item_61', term:'FRIO' },
+    { name:'CERTOLIZUMABE PEGOL 200 MG/ML SOLUÇÃO INJETÁVEL', code:'3003', fe:2, key:'item_62', term:'FRIO' },
+    { name:'CICLOFOSFAMIDA 50 MG DRÁGEA', code:'2273', fe:50, key:'item_63', term:'FRIO' },
+    { name:'CICLOSPORINA 100 MG CAPSULA', code:'325', fe:50, key:'item_64', term:'AMB' },
+    { name:'CICLOSPORINA 100 MG/ML SOLUCAO ORAL', code:'696', fe:1, key:'item_65', term:'AMB' },
+    { name:'CICLOSPORINA 25 MG CAPSULA', code:'323', fe:50, key:'item_66', term:'AMB' },
+    { name:'CICLOSPORINA 50 MG CAPSULA', code:'324', fe:50, key:'item_67', term:'AMB' },
+    { name:'CINACALCETE CLORIDRATO 30 MG COMPRIMIDO REVESTIDO', code:'5606', fe:30, key:'item_68', term:'AMB' },
+    { name:'CINACALCETE CLORIDRATO 60 MG COMPRIMIDO REVESTIDO', code:'7307', fe:30, key:'item_69', term:'AMB' },
+    { name:'CIPROFIBRATO 100 MG COMPRIMIDO', code:'337', fe:20, key:'item_70', term:'AMB' },
+    { name:'CIPROTERONA ACETATO 50 MG COMPRIMIDO', code:'141', fe:20, key:'item_71', term:'AMB' },
+    { name:'CLADRIBINA 10 MG COMPRIMIDO', code:'10207', fe:1, key:'item_72', term:'AMB' },
+    { name:'CLOBAZAM 10 MG COMPRIMIDO', code:'670', fe:20, key:'item_73', term:'AMB' },
+    { name:'CLOBAZAM 20 MG COMPRIMIDO', code:'671', fe:20, key:'item_74', term:'AMB' },
+    { name:'CLOBETASOL PROPIONATO 0,5 MG/G CREME DERMATOLOGICO', code:'4545', fe:1, key:'item_75', term:'AMB' },
+    { name:'CLOBETASOL PROPIONATO 0,5 MG/G SOLUCAO CAPILAR', code:'4253', fe:1, key:'item_76', term:'AMB' },
+    { name:'CLOPIDOGREL BISSULFATO 75 MG COMPRIMIDO REVESTIDO', code:'4284', fe:30, key:'item_77', term:'AMB' },
+    { name:'CLORIDRATO DE OLODATEROL + BROMETO DE TIOTRÓPIO 2,5+2,5 MCG SOLUCAO PARA INALACAO', code:'9665', fe:1, key:'item_78', term:'AMB' },
+    { name:'CLOROQUINA DIFOSFATO 250 MG (150 MG CLOROQUINA BASE) COMPRIMIDO', code:'411', fe:10, key:'item_79', term:'AMB' },
+    { name:'CLOZAPINA 100 MG COMPRIMIDO', code:'801', fe:450, key:'item_80', term:'AMB' },
+    { name:'CLOZAPINA 25 MG COMPRIMIDO', code:'802', fe:200, key:'item_81', term:'AMB' },
+    { name:'CODEINA FOSFATO 3 MG/ML SOLUCAO ORAL', code:'428', fe:1, key:'item_82', term:'AMB' },
+    { name:'CODEINA FOSFATO 30 MG COMPRIMIDO', code:'427', fe:30, key:'item_83', term:'AMB' },
+    { name:'CODEINA FOSFATO 60 MG COMPRIMIDO', code:'429', fe:30, key:'item_84', term:'AMB' },
+    { name:'COLISTIMETATO SODICO 1.000.000 UI SOLUCAO PARA INALACAO', code:'', fe:1, key:'item_85', term:'AMB' },
+    { name:'COMPLEMENTO ALIMENTAR LÁCTEO ISENTO DE SACAROSE (ADOLESCENTE/ADULTO) PÓ', code:'', fe:1, key:'item_86', term:'AMB' },
+    { name:'COMPLEMENTO ALIMENTAR P/ FENILCETONURICOS (FAIXA ETARIA A PARTIR DE 8 ANOS) PO/LATA', code:'2272', fe:1, key:'item_87', term:'AMB' },
+    { name:'COMPLEMENTO ALIMENTAR P/ FENILCETONURICOS FORMULA DE AMINOACIDOS ISENTA DE FENILALANINA (FAIXA ETARIA 0 A 12 MESES) PO/LATA', code:'2271', fe:1, key:'item_88', term:'AMB' },
+    { name:'COMPLEMENTO ALIMENTAR P/ FENILCETONURICOS FORMULA DE AMINOACIDOS ISENTA DE FENILALANINA (FAIXA ETARIA DE 1 A 8 ANOS) PO/LATA', code:'2270', fe:1, key:'item_89', term:'AMB' },
+    { name:'DANAZOL 100 MG CAPSULA', code:'791', fe:50, key:'item_90', term:'AMB' },
+    { name:'DAPAGLIFLOZINA 10 MG COMPRIMIDO REVESTIDO', code:'6370', fe:30, key:'item_91', term:'AMB' },
+    { name:'DEFERASIROX 125 MG COMPRIMIDO PARA SUSPENSÃO', code:'1437', fe:28, key:'item_92', term:'AMB' },
+    { name:'DEFERASIROX 250 MG COMPRIMIDO PARA SUSPENSÃO', code:'1621', fe:28, key:'item_93', term:'AMB' },
+    { name:'DEFERASIROX 500 MG COMPRIMIDO PARA SUSPENSÃO', code:'1438', fe:28, key:'item_94', term:'AMB' },
+    { name:'DEFERIPRONA 1000 MG COMPRIMIDO DE LIBERAÇÃO MODIFICADA', code:'', fe:1, key:'item_95', term:'AMB' },
+    { name:'DEFERIPRONA 500 MG COMPRIMIDO', code:'1619', fe:100, key:'item_96', term:'AMB' },
+    { name:'DESFERROXAMINA MESILATO 500 MG INJETAVEL', code:'472', fe:5, key:'item_97', term:'AMB' },
+    { name:'DESMOPRESSINA ACETATO 0,1 MG COMPRIMIDO', code:'1674', fe:30, key:'item_98', term:'AMB' },
+    { name:'DESMOPRESSINA ACETATO 0,1 MG/ML SOLUCAO NASAL', code:'460', fe:1, key:'item_99', term:'AMB' },
+    { name:'DESMOPRESSINA ACETATO 0,2 MG COMPRIMIDO', code:'', fe:1, key:'item_100', term:'AMB' },
+    { name:'DIETA ENTERAL LÍQUIDA (ADOLESCENTES/ADULTOS) 1,2 e 1,5kcal/ml (ATÉ 1,23 Kcal/ml)', code:'', fe:1, key:'item_101', term:'AMB' },
+    { name:'DIPROPIONATO DE BECLOMETASONA + BROMETO DE GLICOPIRRÔNIO + FUMARATO DE FORMOTEROL 100,0 + 6,0 +12,5 MCG SOLUCAO AEROSSOL', code:'', fe:1, key:'item_102', term:'AMB' },
+    { name:'DONEPEZILA CLORIDRATO 10 MG COMPRIMIDO REVESTIDO', code:'567', fe:200, key:'item_103', term:'AMB' },
+    { name:'DONEPEZILA CLORIDRATO 5 MG COMPRIMIDO REVESTIDO', code:'566', fe:200, key:'item_104', term:'AMB' },
+    { name:'ECULIZUMABE 10 MG/ML SOLUÇÃO INJETÁVEL', code:'', fe:1, key:'item_105', term:'FRIO' },
+    { name:'ELEXACAFTOR + TEZACAFTOR + IVACAFTOR + IVACAFTOR 100 + 50 + 75 + 150 MG COMPRIMIDO REVESTIDO', code:'', fe:1, key:'item_106', term:'AMB' },
+    { name:'ELEXACAFTOR + TEZACAFTOR + IVACAFTOR + IVACAFTOR 50+25+37,5+75 MG COMPRIMIDO REVESTIDO', code:'', fe:1, key:'item_107', term:'AMB' },
+    { name:'ELTROMBOPAGUE OLAMINA 25 MG COMPRIMIDO', code:'7319', fe:14, key:'item_108', term:'AMB' },
+    { name:'ELTROMBOPAGUE OLAMINA 50 MG COMPRIMIDO', code:'7316', fe:14, key:'item_109', term:'AMB' },
+    { name:'ENOXAPARINA SODICA 40 MG/0,4 ML (100 MG/ML), SOLUÇÃO INJETÁVEL', code:'1725', fe:10, key:'item_110', term:'AMB' },
+    { name:'ENOXAPARINA SODICA 60 MG/0,6mL (100 MG/ML), SOLUÇÃO INJETÁVEL', code:'9735', fe:2, key:'item_111', term:'AMB' },
+    { name:'ENTACAPONA 200 MG COMPRIMIDO REVESTIDO', code:'433', fe:30, key:'item_112', term:'AMB' },
+    { name:'ETANERCEPTE (BIOSSIMILAR A) 50 MG PO PARA INJETAVEL', code:'9686', fe:4, key:'item_113', term:'FRIO' },
+    { name:'ETANERCEPTE (ORIGINADOR) 50 MG PO PARA INJETAVEL', code:'556', fe:4, key:'item_114', term:'FRIO' },
+    { name:'ETANERCEPTE 25 MG PO PARA INJETAVEL', code:'555', fe:4, key:'item_115', term:'FRIO' },
+    { name:'ETOSSUXIMIDA 50 MG/ML FRASCO', code:'2274', fe:1, key:'item_116', term:'AMB' },
+    { name:'EVEROLIMO 0,5 MG COMPRIMIDO', code:'1429', fe:60, key:'item_117', term:'AMB' },
+    { name:'EVEROLIMO 0,75 MG COMPRIMIDO', code:'2304', fe:60, key:'item_118', term:'AMB' },
+    { name:'EVEROLIMO 1 MG COMPRIMIDO', code:'1430', fe:60, key:'item_119', term:'AMB' },
+    { name:'FENOFIBRATO 200 MG CAPSULA', code:'824', fe:30, key:'item_120', term:'AMB' },
+    { name:'FENOTEROL BROMIDRATO 100 MCG AEROSSOL ORAL', code:'2286', fe:1, key:'item_121', term:'AMB' },
+    { name:'FILGRASTIM 300 MCG SOLUÇÃO INJETÁVEL', code:'806', fe:1, key:'item_122', term:'FRIO' },
+    { name:'FILTRO PARA SOLUCAO INTRAVENOSA 0', code:'6418', fe:1, key:'item_123', term:'FRIO' },
+    { name:'FINGOLIMODE CLORIDRATO 0,5 MG CAPSULA', code:'4883', fe:28, key:'item_124', term:'AMB' },
+    { name:'FLUDROCORTISONA ACETATO 0,1 MG COMPRIMIDO', code:'651', fe:100, key:'item_125', term:'FRIO' },
+    { name:'FORMOTEROL FUMARATO 12 MCG CAPSULA INALANTE', code:'2287', fe:60, key:'item_126', term:'AMB' },
+    { name:'FÓRMULA INFANTIL (LACTENTES/CRIANÇAS) 1,0 Kcal/ml', code:'', fe:1, key:'item_127', term:'AMB' },
+    { name:'FÓRMULA INFANTIL EM PÓ PARA CRIANÇAS DE 6 MESES A 3 ANOS', code:'', fe:1, key:'item_128', term:'AMB' },
+    { name:'FÓRMULA INFANTIL EM PÓ PARA LACTENTES DE 0 a 6 MESES (1° SEMESTRE)', code:'', fe:1, key:'item_129', term:'AMB' },
+    { name:'FÓRMULA INFANTIL SEMI ELEMENTAR ISENTA DE LACTOSE E SACAROSE (DE 0 A 36 MESES)', code:'', fe:1, key:'item_130', term:'AMB' },
+    { name:'FUMARATO DE DIMETILA 120 MG COMPRIMIDO', code:'9495', fe:14, key:'item_131', term:'AMB' },
+    { name:'FUMARATO DE DIMETILA 240 MG CÁPSULA DURA DE LIBERAÇÃO RETARDADA', code:'9496', fe:56, key:'item_132', term:'AMB' },
+    { name:'FUROATO DE FLUTICASONA + BROMETO DE UMECLIDÍNIO + TRIFENATATO DE VILANTEROL 100 + 62,5 + 25 MCG PO PARA INALAÇÃO', code:'9839', fe:1, key:'item_133', term:'AMB' },
+    { name:'GABAPENTINA 300 MG CÁPSULA DURA', code:'682', fe:60, key:'item_134', term:'AMB' },
+    { name:'GABAPENTINA 400 MG CÁPSULA DURA', code:'681', fe:300, key:'item_135', term:'AMB' },
+    { name:'GALANTAMINA HIDROBROMETO 16 MG CAPSULA DE LIBERACAO CONTROLADA', code:'1046', fe:30, key:'item_136', term:'AMB' },
+    { name:'GALANTAMINA HIDROBROMETO 24 MG CAPSULA DE LIBERACAO CONTROLADA', code:'1047', fe:30, key:'item_137', term:'AMB' },
+    { name:'GALANTAMINA HIDROBROMETO 8 MG CAPSULA DE LIBERACAO CONTROLADA', code:'1048', fe:30, key:'item_138', term:'AMB' },
+    { name:'GALSULFASE 1 MG/ML SOLUÇÃO INJETÁVEL', code:'897', fe:1, key:'item_139', term:'FRIO' },
+    { name:'GANCICLOVIR SODICO 1 MG/ML (250 MG BOLSA FECHADA) SOLUÇÃO INJETÁVEL', code:'2232', fe:1, key:'item_140', term:'AMB' },
+    { name:'GANCICLOVIR SODICO 500 MG PÓ LIOFÍLICO PARA INJETÁVEL', code:'688', fe:1, key:'item_141', term:'AMB' },
+    { name:'GENFIBROZILA 900 MG COMPRIMIDO', code:'695', fe:12, key:'item_142', term:'AMB' },
+    { name:'GLATIRAMER ACETATO 20 MG/ML SOLUÇÃO INJETÁVEL', code:'436', fe:28, key:'item_143', term:'AMB' },
+    { name:'GLATIRAMER ACETATO 40 MG/ML SOLUÇÃO INJETÁVEL', code:'9609', fe:12, key:'item_144', term:'FRIO' },
+    { name:'GOLIMUMABE 50 MG SOLUÇÃO INJETÁVEL', code:'3001', fe:1, key:'item_145', term:'FRIO' },
+    { name:'GOSSERRELINA ACETATO 10,8 MG SOLUÇÃO INJETÁVEL', code:'1664', fe:1, key:'item_146', term:'FRIO' },
+    { name:'GOSSERRELINA ACETATO 3,6 MG SOLUÇÃO INJETÁVEL', code:'1665', fe:1, key:'item_147', term:'FRIO' },
+    { name:'HIDROXICLOROQUINA SULFATO 400 MG COMPRIMIDO', code:'998', fe:30, key:'item_148', term:'AMB' },
+    { name:'HIDROXIUREIA 100 MG COMPRIMIDO REVESTIDO', code:'10272', fe:60, key:'item_149', term:'AMB' },
+    { name:'HIDROXIUREIA 500 MG CAPSULA', code:'758', fe:100, key:'item_150', term:'AMB' },
+    { name:'IDURSULFASE 2 MG/ML SOLUÇÃO INJETÁVEL', code:'8696', fe:1, key:'item_151', term:'FRIO' },
+    { name:'ILOPROSTA 10 MCG/ML SOLUCAO PARA NEBULIZACAO', code:'2289', fe:30, key:'item_152', term:'AMB' },
+    { name:'IMIGLUCERASE 400 UI PO PARA INJETAVEL', code:'2340', fe:1, key:'item_153', term:'FRIO' },
+    { name:'IMUNOGLOBULINA HUMANA 1 G SOLUÇÃO INJETÁVEL', code:'1236', fe:1, key:'item_154', term:'AMB' },
+    { name:'IMUNOGLOBULINA HUMANA 2,5 G SOLUÇÃO INJETÁVEL', code:'1439', fe:1, key:'item_155', term:'AMB' },
+    { name:'IMUNOGLOBULINA HUMANA 5 G SOLUÇÃO INJETÁVEL', code:'648', fe:1, key:'item_156', term:'FRIO' },
+    { name:'INFLIXIMABE (BIOSSIMILAR) 10 MG/ML PO PARA INJETAVEL', code:'9930', fe:1, key:'item_157', term:'FRIO' },
+    { name:'INFLIXIMABE (ORIGINADOR) 10 MG/ML PO PARA INJETAVEL', code:'1045', fe:1, key:'item_158', term:'FRIO' },
+    { name:'INSULINA ANÁLOGA DE AÇÃO PROLONGADA 100 UI/ML (FR) SOLUÇÃO INJETÁVEL', code:'2277', fe:1, key:'item_159', term:'FRIO' },
+    { name:'INSULINA ANÁLOGA DE AÇÃO PROLONGADA 100 UI/ML (RF/CANETA) SOLUÇÃO INJETÁVEL', code:'797', fe:1, key:'item_160', term:'FRIO' },
+    { name:'INSULINA ANÁLOGA DE AÇÃO RÁPIDA (SISTEMA DE APLICAÇÃO DESCARTÁVEL) 100 UI/ML SOLUÇÃO INJETÁVEL', code:'10025', fe:5, key:'item_161', term:'FRIO' },
+    { name:'INSULINA ANÁLOGA DE AÇÃO RÁPIDA (TUBETES COM SISTEMA DE APLICAÇÃO REUTILIZÁVEL) 100 UI/ML SOLUÇÃO INJETÁVEL', code:'948', fe:5, key:'item_162', term:'FRIO' },
+    { name:'INSULINA ANÁLOGA DE AÇÃO RÁPIDA ASPARTE (CRIANÇAS MENORES DE 4 ANOS E GRÁVIDAS) 100 UI/ML SOLUÇÃO INJETÁVEL', code:'9822', fe:5, key:'item_163', term:'FRIO' },
+    { name:'IPRATROPIO BROMETO 20 MCG AEROSSOL ORAL', code:'2334', fe:1, key:'item_164', term:'AMB' },
+    { name:'ISOTRETINOINA 10 MG CAPSULA', code:'294', fe:30, key:'item_165', term:'AMB' },
+    { name:'ISOTRETINOINA 20 MG CAPSULA', code:'779', fe:10, key:'item_166', term:'AMB' },
+    { name:'IVACAFTOR 150 MG COMPRIMIDO REVESTIDO', code:'', fe:1, key:'item_167', term:'FRIO' },
+    { name:'KIT INFUSAO ABATACEPTE', code:'3007', fe:1, key:'item_168', term:'AMB' },
+    { name:'KIT PARA INFUSÁO INFLIXIMABE', code:'3006', fe:1, key:'item_169', term:'AMB' },
+    { name:'LAMIVUDINA 10 MG/ML SOLUCAO ORAL', code:'564', fe:1, key:'item_170', term:'AMB' },
+    { name:'LAMIVUDINA 150 MG COMPRIMIDO', code:'563', fe:60, key:'item_171', term:'AMB' },
+    { name:'LAMOTRIGINA 100 MG COMPRIMIDO', code:'793', fe:200, key:'item_172', term:'AMB' },
+    { name:'LAMOTRIGINA 25 MG COMPRIMIDO', code:'794', fe:30, key:'item_173', term:'AMB' },
+    { name:'LAMOTRIGINA 50 MG COMPRIMIDO', code:'795', fe:20, key:'item_174', term:'AMB' },
+    { name:'LANREOTIDA 120 MG SOLUÇÃO INJETÁVEL', code:'4950', fe:1, key:'item_175', term:'FRIO' },
+    { name:'LANREOTIDA 60 MG SOLUÇÃO INJETÁVEL', code:'4947', fe:1, key:'item_176', term:'FRIO' },
+    { name:'LANREOTIDA 90 MG SOLUÇÃO INJETÁVEL', code:'4948', fe:1, key:'item_177', term:'FRIO' },
+    { name:'LARONIDASE 0,58 MG/ML SOLUÇÃO INJETÁVEL', code:'63', fe:1, key:'item_178', term:'FRIO' },
+    { name:'LEFLUNOMIDA 20 MG COMPRIMIDO', code:'158', fe:30, key:'item_179', term:'AMB' },
+    { name:'LEUPRORRELINA ACETATO 11,25 MG PÓ LIOFÍLICO PARA INJETÁVEL', code:'1623', fe:1, key:'item_180', term:'FRIO' },
+    { name:'LEUPRORRELINA ACETATO 3,75 MG PÓ LIOFÍLICO PARA INJETÁVEL', code:'799', fe:1, key:'item_181', term:'FRIO' },
+    { name:'LEUPRORRELINA ACETATO 45 MG PÓ LIOFÍLICO PARA INJETÁVEL', code:'10044', fe:1, key:'item_182', term:'FRIO' },
+    { name:'LEVETIRACETAM 100 MG/ML (FR 100 ML) SOLUCAO ORAL', code:'8815', fe:1, key:'item_183', term:'AMB' },
+    { name:'LEVETIRACETAM 100 MG/ML (FR 150 ML) SOLUCAO ORAL', code:'9676', fe:1, key:'item_184', term:'AMB' },
+    { name:'LEVETIRACETAM 1000 MG COMPRIMIDO REVESTIDO', code:'9649', fe:30, key:'item_185', term:'AMB' },
+    { name:'LEVETIRACETAM 250 MG COMPRIMIDO REVESTIDO', code:'6663', fe:30, key:'item_186', term:'AMB' },
+    { name:'LEVETIRACETAM 500 MG COMPRIMIDO REVESTIDO', code:'6314', fe:30, key:'item_187', term:'AMB' },
+    { name:'LEVETIRACETAM 750 MG COMPRIMIDO REVESTIDO', code:'8027', fe:30, key:'item_188', term:'AMB' },
+    { name:'LINEZOLIDA 600 MG COMPRIMIDO REVESTIDO', code:'', fe:1, key:'item_189', term:'AMB' },
+    { name:'MEMANTINA CLORIDRATO 10 MG COMPRIMIDO REVESTIDO', code:'1626', fe:200, key:'item_190', term:'AMB' },
+    { name:'MEPOLIZUMABE 100 MG/ML SOLUÇÃO INJETÁVEL', code:'9664', fe:1, key:'item_191', term:'FRIO' },
+    { name:'MESALAZINA 1000 MG SUPOSITORIO', code:'985', fe:28, key:'item_192', term:'AMB' },
+    { name:'MESALAZINA 2000 MG (2G) GRANULADO REVESTIDO DE LIBERAÇÃO PROLONGADA', code:'9997', fe:30, key:'item_193', term:'AMB' },
+    { name:'MESALAZINA 250 MG SUPOSITORIO', code:'167', fe:15, key:'item_194', term:'AMB' },
+    { name:'MESALAZINA 400 MG COMPRIMIDO REVESTIDO', code:'318', fe:30, key:'item_195', term:'AMB' },
+    { name:'MESALAZINA 500 MG COMPRIMIDO REVESTIDO', code:'319', fe:50, key:'item_196', term:'AMB' },
+    { name:'MESALAZINA 800 MG COMPRIMIDO REVESTIDO', code:'320', fe:30, key:'item_197', term:'AMB' },
+    { name:'METADONA 10 MG COMPRIMIDO', code:'1452', fe:20, key:'item_198', term:'AMB' },
+    { name:'METADONA CLORIDRATO 10 MG/ML SOLUÇÃO INJETÁVEL', code:'', fe:1, key:'item_199', term:'AMB' },
+    { name:'METADONA CLORIDRATO 5 MG COMPRIMIDO', code:'895', fe:20, key:'item_200', term:'AMB' },
+    { name:'METOTREXATO 2,5 MG COMPRIMIDO', code:'2293', fe:20, key:'item_201', term:'AMB' },
+    { name:'METOTREXATO 25 MG/ML SOLUÇÃO INJETÁVEL', code:'240', fe:5, key:'item_202', term:'AMB' },
+    { name:'MICOFENOLATO DE SODIO 180 MG COMPRIMIDO', code:'888', fe:120, key:'item_203', term:'AMB' },
+    { name:'MICOFENOLATO DE SODIO 360 MG COMPRIMIDO', code:'887', fe:100, key:'item_204', term:'AMB' },
+    { name:'MICOFENOLATO MOFETILA 500 MG COMPRIMIDO', code:'307', fe:500, key:'item_205', term:'AMB' },
+    { name:'MIGLUSTATE 100 MG CAPSULA', code:'2639', fe:90, key:'item_206', term:'AMB' },
+    { name:'MINOCICLINA CLORIDRATO 100 MG COMPRIMIDO REVESTIDO', code:'398', fe:10, key:'item_207', term:'AMB' },
+    { name:'MORFINA LC SULFATO PENTAIDRATADO 100 MG CAPSULA DE LIBERACAO CONTROLADA', code:'885', fe:60, key:'item_208', term:'AMB' },
+    { name:'MORFINA LC SULFATO PENTAIDRATADO 30 MG CAPSULA DE LIBERACAO CONTROLADA', code:'883', fe:100, key:'item_209', term:'AMB' },
+    { name:'MORFINA LC SULFATO PENTAIDRATADO 60 MG CAPSULA DE LIBERACAO CONTROLADA', code:'884', fe:60, key:'item_210', term:'AMB' },
+    { name:'MORFINA SULFATO 10 MG COMPRIMIDO', code:'502', fe:50, key:'item_211', term:'AMB' },
+    { name:'MORFINA SULFATO 10 MG/ML SOLUÇÃO INJETÁVEL', code:'504', fe:100, key:'item_212', term:'AMB' },
+    { name:'MORFINA SULFATO 10 MG/ML SOLUCAO ORAL', code:'507', fe:1, key:'item_213', term:'AMB' },
+    { name:'MORFINA SULFATO 100 MG CAPSULA', code:'', fe:1, key:'item_214', term:'AMB' },
+    { name:'MORFINA SULFATO 30 MG COMPRIMIDO', code:'503', fe:50, key:'item_215', term:'AMB' },
+    { name:'NAPROXENO 250 MG COMPRIMIDO', code:'2564', fe:24, key:'item_216', term:'AMB' },
+    { name:'NAPROXENO 500 MG COMPRIMIDO', code:'1860', fe:24, key:'item_217', term:'AMB' },
+    { name:'NATALIZUMABE 300 MG SOLUÇÃO INJETÁVEL', code:'2493', fe:1, key:'item_218', term:'FRIO' },
+    { name:'NINTEDANIBE 150 MG CÁPSULA MOLE', code:'7331', fe:60, key:'item_219', term:'FRIO' },
+    { name:'NUSINERSENA 2,4 MG/ML (12MG/5ML) SOLUÇÃO INJETÁVEL', code:'', fe:1, key:'item_220', term:'FRIO' },
+    { name:'OCTREOTIDA ACETATO 0,1 MG/ML SOLUÇÃO INJETÁVEL', code:'1454', fe:5, key:'item_221', term:'FRIO' },
+    { name:'OCTREOTIDA LAR 10 MG PÓ PARA SUSPENSÃO INJETÁVEL', code:'1078', fe:1, key:'item_222', term:'FRIO' },
+    { name:'OCTREOTIDA LAR 20 MG PÓ PARA SUSPENSÃO INJETÁVEL', code:'1079', fe:1, key:'item_223', term:'FRIO' },
+    { name:'OCTREOTIDA LAR 30 MG PÓ PARA SUSPENSÃO INJETÁVEL', code:'1080', fe:1, key:'item_224', term:'FRIO' },
+    { name:'OLANZAPINA 10 MG COMPRIMIDO', code:'951', fe:30, key:'item_225', term:'AMB' },
+    { name:'OLANZAPINA 5 MG COMPRIMIDO', code:'950', fe:30, key:'item_226', term:'AMB' },
+    { name:'OMALIZUMABE 150 MG SOLUÇÃO INJETÁVEL', code:'1250', fe:1, key:'item_227', term:'FRIO' },
+    { name:'PANCREATINA 10.000 UI (150 MG) CÁPSULA DURA', code:'2294', fe:30, key:'item_228', term:'AMB' },
+    { name:'PANCREATINA 25.000 UI (300 MG) CÁPSULA DURA', code:'2295', fe:30, key:'item_229', term:'AMB' },
+    { name:'PARICALCITOL 5 MCG/ML SOLUÇÃO INJETÁVEL', code:'7443', fe:5, key:'item_230', term:'AMB' },
+    { name:'PENICILAMINA 250 MG CAPSULA', code:'453', fe:100, key:'item_231', term:'AMB' },
+    { name:'PIRFENIDONA 267 MG CAPSULA', code:'8549', fe:270, key:'item_232', term:'AMB' },
+    { name:'PIRIDOSTIGMINA BROMETO 60 MG COMPRIMIDO', code:'855', fe:60, key:'item_233', term:'AMB' },
+    { name:'PRAMIPEXOL DICLORIDRATO 0,125 MG (0,088 MG DE PRAMIPEXOL) COMPRIMIDO', code:'1106', fe:10, key:'item_234', term:'AMB' },
+    { name:'PRAMIPEXOL DICLORIDRATO 0,25 MG (0,18 MG DE PRAMIPEXOL) COMPRIMIDO', code:'1107', fe:10, key:'item_235', term:'AMB' },
+    { name:'PRAMIPEXOL DICLORIDRATO 1,0 MG (0,7 MG DE PRAMIPEXOL) COMPRIMIDO', code:'1108', fe:300, key:'item_236', term:'AMB' },
+    { name:'PRIMIDONA 100 MG COMPRIMIDO', code:'1017', fe:100, key:'item_237', term:'AMB' },
+    { name:'QUETIAPINA HEMIFUMARATO 100 MG COMPRIMIDO', code:'1101', fe:30, key:'item_238', term:'AMB' },
+    { name:'QUETIAPINA HEMIFUMARATO 200 MG COMPRIMIDO', code:'1102', fe:28, key:'item_239', term:'AMB' },
+    { name:'QUETIAPINA HEMIFUMARATO 25 MG COMPRIMIDO', code:'1103', fe:30, key:'item_240', term:'AMB' },
+    { name:'QUETIAPINA HEMIFUMARATO 300 MG COMPRIMIDO', code:'2296', fe:200, key:'item_241', term:'AMB' },
+    { name:'RALOXIFENO CLORIDRATO 60 MG COMPRIMIDO REVESTIDO', code:'612', fe:30, key:'item_242', term:'AMB' },
+    { name:'RASAGILINA 1 MG COMPRIMIDO', code:'194', fe:30, key:'item_243', term:'AMB' },
+    { name:'RIFAMPICINA 20 MG/ML SUSPENSAO ORAL', code:'880', fe:50, key:'item_244', term:'AMB' },
+    { name:'RIFAMPICINA 300 MG CÁPSULA DURA', code:'879', fe:10, key:'item_245', term:'AMB' },
+    { name:'RILUZOL 50 MG COMPRIMIDO REVESTIDO', code:'1058', fe:28, key:'item_246', term:'AMB' },
+    { name:'RISANQUIZUMABE 150 MG/ML SOLUÇÃO INJETÁVEL', code:'10253', fe:1, key:'item_247', term:'FRIO' },
+    { name:'RISANQUIZUMABE 75 MG/ 0,83 ML SOLUÇÃO INJETÁVEL', code:'9896', fe:2, key:'item_248', term:'FRIO' },
+    { name:'RISDIPLAM 0,75 MG/ML PÓ PARA SOLUÇÃO ORAL', code:'', fe:1, key:'item_249', term:'FRIO' },
+    { name:'RISEDRONATO SODICO 35 MG COMPRIMIDO REVESTIDO', code:'1266', fe:12, key:'item_250', term:'AMB' },
+    { name:'RISPERIDONA 1 MG COMPRIMIDO REVESTIDO', code:'1059', fe:300, key:'item_251', term:'AMB' },
+    { name:'RISPERIDONA 1 MG/ML SOLUCAO ORAL', code:'2558', fe:1, key:'item_252', term:'AMB' },
+    { name:'RISPERIDONA 2 MG COMPRIMIDO REVESTIDO', code:'1060', fe:300, key:'item_253', term:'AMB' },
+    { name:'RITUXIMABE (BIOSSIMILAR A) 500 MG INJETÁVEL (POR FRASCO-AMPOLA DE 50 ML)', code:'9695', fe:1, key:'item_254', term:'FRIO' },
+    { name:'RITUXIMABE (BIOSSIMILAR B) 100 MG INJETÁVEL (POR FRASCO-AMPOLA DE 10 ML)', code:'', fe:1, key:'item_255', term:'FRIO' },
+    { name:'RITUXIMABE (BIOSSIMILAR B) 500 MG INJETÁVEL (POR FRASCO-AMPOLA DE 50 ML)', code:'10292', fe:1, key:'item_256', term:'FRIO' },
+    { name:'RITUXIMABE (ORIGINADOR) 500 MG INJETÁVEL (POR FRASCO-AMPOLA DE 50 ML)', code:'839', fe:1, key:'item_257', term:'FRIO' },
+    { name:'RIVASTIGMINA 18 MG MG ADESIVO TRANSDERMICO', code:'2943', fe:30, key:'item_258', term:'AMB' },
+    { name:'RIVASTIGMINA 2 MG/ML SOLUCAO ORAL', code:'1030', fe:1, key:'item_259', term:'AMB' },
+    { name:'RIVASTIGMINA 9 MG ADESIVO TRANSDERMICO', code:'5027', fe:30, key:'item_260', term:'AMB' },
+    { name:'RIVASTIGMINA HEMITARTARATO 4,5 MG CÁPSULA DURA', code:'1436', fe:30, key:'item_261', term:'AMB' },
+    { name:'RIVASTIGMINA HEMITARTARATO 6,0 MG CÁPSULA DURA', code:'1029', fe:30, key:'item_262', term:'AMB' },
+    { name:'ROMOSOZUMABE 90 MG/ML SOLUÇÃO INJETÁVEL', code:'9852', fe:2, key:'item_263', term:'FRIO' },
+    { name:'SACARATO DE HIDROXIDO FERRICO 20 MG/ML SOLUÇÃO INJETÁVEL', code:'2297', fe:50, key:'item_264', term:'AMB' },
+    { name:'SACUBITRIL VALSARTANA SÓDICA HIDRATADA 100 MG COMPRIMIDO', code:'8902', fe:60, key:'item_265', term:'AMB' },
+    { name:'SACUBITRIL VALSARTANA SÓDICA HIDRATADA 200 MG COMPRIMIDO', code:'8903', fe:60, key:'item_266', term:'AMB' },
+    { name:'SACUBITRIL VALSARTANA SÓDICA HIDRATADA 50 MG COMPRIMIDO', code:'8901', fe:28, key:'item_267', term:'AMB' },
+    { name:'SALMETEROL + FLUTICASONA 25+125 MCG SUSPENSAO COM PROPELENTE', code:'1098', fe:1, key:'item_268', term:'AMB' },
+    { name:'SALMETEROL + FLUTICASONA 25+250 MCG SUSPENSAO COM PROPELENTE', code:'1099', fe:1, key:'item_269', term:'AMB' },
+    { name:'SALMETEROL + FLUTICASONA 50+250 MCG PO PARA INALAÇÃO', code:'1097', fe:1, key:'item_270', term:'AMB' },
+    { name:'SALMETEROL XINAFOATO 50 MCG PO PARA INALAÇÃO', code:'1100', fe:1, key:'item_271', term:'AMB' },
+    { name:'SAPROPTERINA DICLORIDRATO 100 MG COMPRIMIDO', code:'9557', fe:30, key:'item_272', term:'FRIO' },
+    { name:'SECUQUINUMABE 150 MG/ML PÓ PARA SOLUÇÃO INJETÁVEL', code:'8558', fe:1, key:'item_273', term:'FRIO' },
+    { name:'SELEGILINA CLORIDRATO 5 MG COMPRIMIDO', code:'402', fe:50, key:'item_274', term:'AMB' },
+    { name:'SEVELAMER CLORIDRATO 800 MG COMPRIMIDO', code:'1050', fe:180, key:'item_275', term:'AMB' },
+    { name:'SILDENAFILA CITRATO 20 MG COMPRIMIDO REVESTIDO', code:'1053', fe:60, key:'item_276', term:'AMB' },
+    { name:'SILDENAFILA CITRATO 25 MG COMPRIMIDO REVESTIDO', code:'1229', fe:8, key:'item_277', term:'AMB' },
+    { name:'SILDENAFILA CITRATO 50 MG COMPRIMIDO REVESTIDO', code:'1226', fe:10, key:'item_278', term:'AMB' },
+    { name:'SIROLIMO 1 MG DRÁGEA', code:'1041', fe:60, key:'item_279', term:'AMB' },
+    { name:'SIROLIMO 2 MG DRÁGEA', code:'1042', fe:30, key:'item_280', term:'AMB' },
+    { name:'SOMATROPINA 12 UI PÓ LIOFÍLICO PARA INJETÁVEL', code:'751', fe:1, key:'item_281', term:'FRIO' },
+    { name:'SOMATROPINA 4 UI PÓ LIOFÍLICO PARA INJETÁVEL', code:'239', fe:1, key:'item_282', term:'FRIO' },
+    { name:'SULFASSALAZINA 500 MG COMPRIMIDO REVESTIDO', code:'200', fe:60, key:'item_283', term:'AMB' },
+    { name:'SUPLEMENTO DE CARBOIDRATO À BASE DE MALTODEXTRINA (100% MALTODEXTRINA PURA) PÓ SOLUVEL', code:'', fe:1, key:'item_284', term:'AMB' },
+    { name:'SUPLEMENTO DE EMULSÃO LIPÍDICA', code:'', fe:1, key:'item_285', term:'AMB' },
+    { name:'SUPLEMENTO HIPERCALÓRICO LÍQUIDO ATÉ 2 KCal/ml (embalagem &#8804', code:'', fe:1, key:'item_286', term:'AMB' },
+    { name:'SUPLEMENTO PEDIÁTRICO (A PARTIR 12 MESES) NORMOCALÓRICA,NORMOPROTÉICA OU HIPERPROTEICA PÓ SOLUVEL', code:'9916', fe:1, key:'item_287', term:'AMB' },
+    { name:'TACROLIMO 1 MG CÁPSULA DURA', code:'638', fe:250, key:'item_288', term:'AMB' },
+    { name:'TACROLIMO 5 MG CÁPSULA DURA', code:'639', fe:10, key:'item_289', term:'AMB' },
+    { name:'TAFAMIDIS 20 MG CAPSULA', code:'9497', fe:30, key:'item_290', term:'FRIO' },
+    { name:'TAFAMIDIS 61 MG CÁPSULA MOLE', code:'10293', fe:30, key:'item_291', term:'AMB' },
+    { name:'TERIFLUNOMIDA 14 MG COMPRIMIDO', code:'7343', fe:30, key:'item_292', term:'AMB' },
+    { name:'TIOTROPIO BROMETO 2,5 MCG SOLUCAO PARA INALACAO', code:'2784', fe:1, key:'item_293', term:'AMB' },
+    { name:'TOBRAMICINA 60 MG/ML (300MG/5ML) SOLUCAO PARA INALACAO', code:'', fe:1, key:'item_294', term:'AMB' },
+    { name:'TOCILIZUMABE 20 MG/ML SOLUÇÃO INJETÁVEL', code:'3002', fe:1, key:'item_295', term:'FRIO' },
+    { name:'TOFACITINIBE 5 MG COMPRIMIDO REVESTIDO', code:'7037', fe:60, key:'item_296', term:'AMB' },
+    { name:'TOPIRAMATO 100 MG COMPRIMIDO', code:'96', fe:60, key:'item_297', term:'AMB' },
+    { name:'TOPIRAMATO 25 MG COMPRIMIDO', code:'1177', fe:12, key:'item_298', term:'AMB' },
+    { name:'TOPIRAMATO 50 MG COMPRIMIDO', code:'1178', fe:60, key:'item_299', term:'AMB' },
+    { name:'TOXINA BOTULINICA TIPO A 100 UI FRASCO-AMPOLA', code:'245', fe:1, key:'item_300', term:'FRIO' },
+    { name:'TOXINA BOTULINICA TIPO A 500 UI FRASCO-AMPOLA', code:'543', fe:1, key:'item_301', term:'FRIO' },
+    { name:'TRIENTINA 250 MG CAPSULA', code:'2312', fe:100, key:'item_302', term:'FRIO' },
+    { name:'TRIEXIFENIDILA CLORIDRATO 5 MG COMPRIMIDO', code:'166', fe:30, key:'item_303', term:'AMB' },
+    { name:'TRIPTORRELINA 11,25 MG SUSPENSAO INJETAVEL', code:'9687', fe:1, key:'item_304', term:'AMB' },
+    { name:'TRIPTORRELINA 22,5 MG PÓ LIOFILIZADO PARA INJETÁVEL', code:'10003', fe:1, key:'item_305', term:'AMB' },
+    { name:'TRIPTORRELINA 3,75 MG SUSPENSAO INJETAVEL', code:'9688', fe:1, key:'item_306', term:'AMB' },
+    { name:'UMECLIDÍNIO BROMETO 62,5 MCG PO PARA INALAÇÃO', code:'9980', fe:1, key:'item_307', term:'AMB' },
+    { name:'UPADACITINIBE 15 MG COMPRIMIDO REVESTIDO DE LIBERAÇÃO PROLONGADA', code:'9895', fe:30, key:'item_308', term:'AMB' },
+    { name:'USTEQUINUMABE 45 MG (0,5 ML) SOLUÇÃO INJETÁVEL(BIOSSIMILAR)', code:'7633', fe:1, key:'item_309', term:'FRIO' },
+    { name:'USTEQUINUMABE 45 MG (0,5 ML) SOLUÇÃO INJETÁVEL(ORIGINADOR)', code:'7633', fe:1, key:'item_310', term:'FRIO' },
+    { name:'VEDOLIZUMABE 300 MG PÓ LIOFILIZADO PARA INJETÁVEL', code:'9456', fe:1, key:'item_311', term:'FRIO' },
+    { name:'VIGABATRINA 500 MG COMPRIMIDO', code:'1073', fe:60, key:'item_312', term:'AMB' },
+    { name:'ZIPRASIDONA CLORIDRATO MONOIDRATADO 40 MG CAPSULA', code:'708', fe:28, key:'item_313', term:'AMB' },
+    { name:'ZIPRASIDONA CLORIDRATO MONOIDRATADO 80 MG CAPSULA', code:'710', fe:28, key:'item_314', term:'AMB' },  ];
   const tbody = document.getElementById('tbodyI');
   const emptyRowI = document.getElementById('emptyRowI');
   const noMatchRowI = document.getElementById('noMatchRowI');
@@ -1838,7 +1994,7 @@ const items = [
     tr.innerHTML = `
       <td class="sem-status"><span class="status-badge gray"><span class="dot"></span>Sem dados</span></td>
       <td class="sem-suficiencia"><span class="status-badge gray"><span class="dot"></span>Sem dados</span></td>
-      <td class="name">${item.name}</td>
+      <td class="name">${item.name}${item.term==='FRIO' ? ' <span class="term-badge" title="Item termolábil — usa a Data Prevista de Entrega Termolábil">❄ termolábil</span>' : ''}</td>
       <td class="code">${item.code}</td>
       <td><input type="number" min="1" value="${item.fe}" class="fe-input" data-key="${item.key}" data-col="fe"></td>
       <td><input type="number" min="0" value="0" data-key="${item.key}" data-col="consumo"></td>
@@ -1882,7 +2038,7 @@ const items = [
     const content = document.querySelector(`.calc-memo[data-memo-content-key="${k}"] dl`);
     if(!content) return;
     const linhas = [
-      ['A consumir até início', `round(consumo ÷ 30 × dias até início) = round(${v.consumo} ÷ 30 × ${v.diasAteInicio}) = <b>${v.aConsumir}</b>`],
+      ['A consumir até a entrega', `round(consumo ÷ 30 × dias até a entrega${v.term==='FRIO' ? ' — termolábil' : ' — termoestável'}) = round(${v.consumo} ÷ 30 × ${v.diasAteEntrega}) = <b>${v.aConsumir}</b>`],
       ['Estoque futuro', `estoque − a consumir − reservado − vencimento + a receber = ${v.estoque} − ${v.aConsumir} − ${v.reservado} − ${v.vencimento} + ${v.receber} = <b>${v.futuro}</b>`],
       ['Estoque de segurança', `consumo × meses de cobertura × margem = ${v.consumo} × ${v.mesesCobertura.toFixed(2)} × ${(v.margem/100).toFixed(2)} = <b>${v.seguranca}</b>`],
       ['Quantidade necessária', `(consumo × meses de cobertura) + segurança − futuro = (${v.consumo} × ${v.mesesCobertura.toFixed(2)}) + ${v.seguranca} − ${v.futuro} = <b>${v.necessaria}</b>`],
@@ -2055,6 +2211,8 @@ const items = [
   const dataAnalise = document.getElementById('dataAnalise');
   const dataInicio = document.getElementById('dataInicio');
   const dataFim = document.getElementById('dataFim');
+  const dataEntregaFrio = document.getElementById('dataEntregaFrio');
+  const dataEntregaAmb = document.getElementById('dataEntregaAmb');
   const estabCnes = document.getElementById('estabCnes');
   const estabNome = document.getElementById('estabNome');
   const estabResponsavel = document.getElementById('estabResponsavel');
@@ -2162,12 +2320,41 @@ const items = [
   const campoAnalise = dataAnalise.closest('.field');
   const campoInicio = dataInicio.closest('.field');
   const campoFim = dataFim.closest('.field');
+  const campoEntregaFrio = dataEntregaFrio.closest('.field');
+  const campoEntregaAmb = dataEntregaAmb.closest('.field');
 
-  // Valida as datas informadas: Fim não pode ser anterior ao Início, e a Data
-  // de Análise não pode ser posterior ao fim do período de cobertura.
-  function validateDates(dA, dI, dF){
+  // Valida as datas informadas: Fim não pode ser anterior ao Início, a Data
+  // de Análise não pode ser posterior ao fim do período de cobertura, e
+  // nenhuma das Datas Previstas de Entrega (termolábil/termoestável) pode
+  // ser anterior à Data de Análise.
+  function validateDates(dA, dI, dF, dEFrio, dEAmb){
     const erros = [];
-    [campoAnalise, campoInicio, campoFim].forEach(c=> c.classList.remove('invalid'));
+    [campoAnalise, campoInicio, campoFim, campoEntregaFrio, campoEntregaAmb].forEach(c=> c.classList.remove('invalid'));
+
+    // Todas as datas são obrigatórias. Sem isso, os cálculos não têm como
+    // saber a referência correta de cada item e não devem seguir em frente
+    // com suposições (por exemplo, não se assume a Data Início de Cobertura
+    // no lugar de uma Data Prevista de Entrega não preenchida).
+    if(!dA){
+      erros.push('A <b>Data de Análise do Estoque</b> é obrigatória.');
+      campoAnalise.classList.add('invalid');
+    }
+    if(!dI){
+      erros.push('A <b>Data Início de Cobertura</b> é obrigatória.');
+      campoInicio.classList.add('invalid');
+    }
+    if(!dF){
+      erros.push('A <b>Data Fim de Cobertura</b> é obrigatória.');
+      campoFim.classList.add('invalid');
+    }
+    if(!dEFrio){
+      erros.push('A <b>Data Prevista de Entrega · Termolábil</b> é obrigatória.');
+      campoEntregaFrio.classList.add('invalid');
+    }
+    if(!dEAmb){
+      erros.push('A <b>Data Prevista de Entrega · Termoestável</b> é obrigatória.');
+      campoEntregaAmb.classList.add('invalid');
+    }
 
     if(dI && dF && dF < dI){
       erros.push('A <b>Data Fim de Cobertura</b> não pode ser anterior à <b>Data Início de Cobertura</b>.');
@@ -2178,6 +2365,24 @@ const items = [
       erros.push('A <b>Data de Análise do Estoque</b> não pode ser posterior ao período de cobertura (após a Data Fim).');
       campoAnalise.classList.add('invalid');
       campoFim.classList.add('invalid');
+    }
+    if(dEFrio && dA && dEFrio < dA){
+      erros.push('A <b>Data Prevista de Entrega · Termolábil</b> não pode ser anterior à <b>Data de Análise do Estoque</b>.');
+      campoEntregaFrio.classList.add('invalid');
+      campoAnalise.classList.add('invalid');
+    }
+    if(dEFrio && dF && dEFrio > dF){
+      erros.push('A <b>Data Prevista de Entrega · Termolábil</b> está após a <b>Data Fim de Cobertura</b>; verifique se o período pactuado ainda cobre esse atraso na entrega.');
+      campoEntregaFrio.classList.add('invalid');
+    }
+    if(dEAmb && dA && dEAmb < dA){
+      erros.push('A <b>Data Prevista de Entrega · Termoestável</b> não pode ser anterior à <b>Data de Análise do Estoque</b>.');
+      campoEntregaAmb.classList.add('invalid');
+      campoAnalise.classList.add('invalid');
+    }
+    if(dEAmb && dF && dEAmb > dF){
+      erros.push('A <b>Data Prevista de Entrega · Termoestável</b> está após a <b>Data Fim de Cobertura</b>; verifique se o período pactuado ainda cobre esse atraso na entrega.');
+      campoEntregaAmb.classList.add('invalid');
     }
 
     if(erros.length){
@@ -2194,16 +2399,27 @@ const items = [
     const dA = parseDate(dataAnalise.value);
     const dI = parseDate(dataInicio.value);
     const dF = parseDate(dataFim.value);
-    const datasValidas = validateDates(dA, dI, dF);
+    const dEFrio = parseDate(dataEntregaFrio.value);
+    const dEAmb = parseDate(dataEntregaAmb.value);
+    const datasValidas = validateDates(dA, dI, dF, dEFrio, dEAmb);
     const diasCobertura = (dI && dF && datasValidas) ? Math.max(daysBetween(dI,dF),0) : 0;
     const mesesCobertura = diasCobertura/30;
-    const diasAteInicio = (dA && dI && datasValidas) ? Math.max(daysBetween(dA,dI),0) : 0;
+    // Referência para o consumo até a reposição do estoque, por categoria
+    // térmica: usa exclusivamente a Data Prevista de Entrega específica
+    // (termolábil ou termoestável). Todas as datas são obrigatórias — não
+    // se assume a Data Início de Cobertura (nem qualquer outra data) no
+    // lugar de uma Data Prevista de Entrega não preenchida.
+    const diasAteEntregaFrio = (dA && dEFrio && datasValidas) ? Math.max(daysBetween(dA,dEFrio),0) : 0;
+    const diasAteEntregaAmb = (dA && dEAmb && datasValidas) ? Math.max(daysBetween(dA,dEAmb),0) : 0;
     document.getElementById('statMeses').textContent = mesesCobertura ?
 mesesCobertura.toFixed(1) : '0';
     document.getElementById('statDias').textContent = diasCobertura;
-    document.getElementById('statDiasAteInicio').textContent = diasAteInicio;
+    document.getElementById('statDiasAteEntregaFrio').textContent = diasAteEntregaFrio;
+    document.getElementById('statDiasAteEntregaAmb').textContent = diasAteEntregaAmb;
     document.getElementById('lblAnalise').textContent = fmt(dA);
     document.getElementById('lblInicio').textContent = fmt(dI);
+    document.getElementById('lblEntregaFrio').textContent = fmt(dEFrio);
+    document.getElementById('lblEntregaAmb').textContent = fmt(dEAmb);
     document.getElementById('lblFim').textContent = fmt(dF);
     // timeline fill: percent between analise and fim, marking inicio
     let pct = 0;
@@ -2213,6 +2429,22 @@ mesesCobertura.toFixed(1) : '0';
       pct = total>0 ? Math.min(Math.max((toInicio/total)*100,0),100) : 0;
     }
     document.getElementById('timelineFill').style.width = pct+'%';
+    // marcadores das Datas Previstas de Entrega na trilha da timeline
+    function posicionarMarcador(elId, data){
+      const marker = document.getElementById(elId);
+      if(!marker) return;
+      if(dA && dF && dF>dA && data){
+        const total = daysBetween(dA,dF);
+        const toData = daysBetween(dA,data);
+        const pctData = total>0 ? Math.min(Math.max((toData/total)*100,0),100) : 0;
+        marker.style.left = pctData+'%';
+        marker.style.display = 'block';
+      } else {
+        marker.style.display = 'none';
+      }
+    }
+    posicionarMarcador('timelineMarkerFrio', dEFrio);
+    posicionarMarcador('timelineMarkerAmb', dEAmb);
 
     const coberturaAlert = document.getElementById('coberturaAlert');
     if(coberturaAlert){
@@ -2233,7 +2465,12 @@ mesesCobertura.toFixed(1) : '0';
       const margem = getVal(`input[data-key="${k}"][data-col="margem"]`);
       const fe = Math.max(getVal(`input[data-key="${k}"][data-col="fe"]`),1);
 
-      const aConsumir = Math.max(Math.round((consumo/30)*diasAteInicio),0);
+      // Cada item usa a Data Prevista de Entrega da sua categoria térmica
+      // (termolábil ou termoestável) para projetar o consumo até a reposição.
+      const item = itemsByKey[k];
+      const diasAteEntrega = (item && item.term === 'FRIO') ? diasAteEntregaFrio : diasAteEntregaAmb;
+
+      const aConsumir = Math.max(Math.round((consumo/30)*diasAteEntrega),0);
       const futuro = Math.max(estoque - aConsumir - reservado - vencimento +
 receber, 0);
       const seguranca = Math.ceil(consumo * mesesCobertura * (margem/100));
@@ -2310,7 +2547,7 @@ receber, 0);
 
       renderMemo(k, {
         consumo, estoque, reservado, vencimento, receber, margem, fe,
-        diasAteInicio, mesesCobertura, aConsumir, futuro, seguranca,
+        diasAteEntrega, term: item ? item.term : 'AMB', mesesCobertura, aConsumir, futuro, seguranca,
         necessaria, programacao, sugerida, excedente,
         manual: !!manualOverride[k]
       });
@@ -2332,14 +2569,15 @@ receber, 0);
   function renderResumoPedido(){
     const resumoBody = document.getElementById('tbodyResumo');
     const resumoContagem = document.getElementById('resumoContagem');
-    if(selectedKeys.length===0){
+    const chavesComQtd = selectedKeys.filter(k=> (sugeridaByKey[k] || 0) >= 1);
+    if(chavesComQtd.length===0){
       resumoBody.innerHTML = `<tr id="emptyRowResumo" class="empty-row">
-        <td colspan="3">Nenhum item adicionado ainda. Adicione itens na tabela
-acima para vê-los aqui.</td></tr>`;
+        <td colspan="3">Nenhum item com quantidade sugerida maior ou igual a 1.
+Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
       resumoContagem.textContent = '';
       return;
     }
-    const ordenado = [...selectedKeys].sort((a,b)=>
+    const ordenado = [...chavesComQtd].sort((a,b)=>
       itemsByKey[a].name.localeCompare(itemsByKey[b].name,'pt-BR'));
     resumoBody.innerHTML = ordenado.map(k=>{
       const item = itemsByKey[k];
@@ -2350,7 +2588,7 @@ acima para vê-los aqui.</td></tr>`;
         <td class="qtd">${qtd}</td>
       </tr>`;
     }).join('');
-    resumoContagem.textContent = `${selectedKeys.length} ${selectedKeys.length===1 ? 'item para lançar' : 'itens para lançar'}`;
+    resumoContagem.textContent = `${chavesComQtd.length} ${chavesComQtd.length===1 ? 'item para lançar' : 'itens para lançar'}`;
   }
 
   document.addEventListener('input', (e)=>{
@@ -2362,7 +2600,7 @@ acima para vê-los aqui.</td></tr>`;
   });
   document.getElementById('btnReset').addEventListener('click', ()=>{
     if(!confirm('Deseja limpar os valores preenchidos? Os itens já adicionados à programação serão mantidos na lista, apenas os campos numéricos serão zerados.')) return;
-    dataAnalise.value=hojeISO(); dataInicio.value=''; dataFim.value='';
+    dataAnalise.value=hojeISO(); dataInicio.value=''; dataFim.value=''; dataEntregaFrio.value=''; dataEntregaAmb.value='';
 
     document.querySelectorAll('#tbodyI input').forEach(inp=>{
       if(inp.dataset.col==='fe'){
@@ -2397,12 +2635,12 @@ window.print());
     }
 
     const cabecalho = [
-      'Status','Suficiência do pedido','Item','Código SIGAF','Quantidade por embalagem (un)',
+      'Status','Suficiência do pedido','Item','Categoria térmica','Código SIGAF','Quantidade por embalagem (un)',
       'Consumo estimado no mês (un)','Estoque disponível (un)',
       'Reservado para outros programas (un)','Vencimento próximo (un)',
       'A receber (un)','Margem de segurança (%)','Programação de ajuste (un)',
       'Cobertura (meses)','Cobertura (dias)',
-      'A consumir até início da cobertura (un)','Estoque futuro (un)',
+      'A consumir até a entrega (un)','Estoque futuro (un)',
       'Estoque de segurança (un)','Quantidade necessária (un)',
       'Programação sugerida (ajuste à embalagem) (un)','Quantidade excedente (un)'
     ];
@@ -2429,6 +2667,7 @@ window.print());
         status,
         suficiencia,
         item ? item.name : '',
+        item && item.term==='FRIO' ? 'Termolábil' : 'Termoestável',
         item ? item.code : '',
         getVal('fe'),
         getVal('consumo'),
@@ -2560,6 +2799,8 @@ window.print());
       dataAnalise: dataAnalise.value,
       dataInicio: dataInicio.value,
       dataFim: dataFim.value,
+      dataEntregaFrio: dataEntregaFrio.value,
+      dataEntregaAmb: dataEntregaAmb.value,
       filtro: filtroSemaforo.value,
       items: itemsState
     };
@@ -2576,6 +2817,11 @@ window.print());
     if(state.dataAnalise !== undefined) dataAnalise.value = state.dataAnalise;
     if(state.dataInicio !== undefined) dataInicio.value = state.dataInicio;
     if(state.dataFim !== undefined) dataFim.value = state.dataFim;
+    if(state.dataEntregaFrio !== undefined) dataEntregaFrio.value = state.dataEntregaFrio;
+    if(state.dataEntregaAmb !== undefined) dataEntregaAmb.value = state.dataEntregaAmb;
+    // Compatibilidade com rascunhos salvos antes da separação por categoria
+    // térmica: usa o valor único antigo como referência para Termoestável.
+    else if(state.dataEntrega !== undefined) dataEntregaAmb.value = state.dataEntrega;
     (state.items || []).forEach(it=>{
       if(!it || !itemsByKey[it.key]) return;
       addItem(it.key);
@@ -2649,7 +2895,7 @@ window.print());
       const raw = window.localStorage.getItem(AUTOSAVE_KEY);
       if(raw) saved = JSON.parse(raw);
     }catch(err){ saved = null; }
-    const temConteudo = saved && ((saved.items && saved.items.length) || saved.dataInicio || saved.dataFim);
+    const temConteudo = saved && ((saved.items && saved.items.length) || saved.dataInicio || saved.dataFim || saved.dataEntregaFrio || saved.dataEntregaAmb || saved.dataEntrega);
     if(!temConteudo) return;
 
     // Restaura o rascunho automaticamente ao carregar a página. Antes, o
