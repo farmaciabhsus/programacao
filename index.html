@@ -2328,7 +2328,8 @@ const items = [
   // nenhuma das Datas Previstas de Entrega (termolábil/termoestável) pode
   // ser anterior à Data de Análise.
   function validateDates(dA, dI, dF, dEFrio, dEAmb){
-    const erros = [];
+    const erros = [];   // impedem os cálculos (datas ausentes ou logicamente impossíveis)
+    const avisos = [];  // apenas alertam o usuário, sem zerar os cálculos
     [campoAnalise, campoInicio, campoFim, campoEntregaFrio, campoEntregaAmb].forEach(c=> c.classList.remove('invalid'));
 
     // Todas as datas são obrigatórias. Sem isso, os cálculos não têm como
@@ -2371,27 +2372,32 @@ const items = [
       campoEntregaFrio.classList.add('invalid');
       campoAnalise.classList.add('invalid');
     }
-    if(dEFrio && dF && dEFrio > dF){
-      erros.push('A <b>Data Prevista de Entrega · Termolábil</b> está após a <b>Data Fim de Cobertura</b>; verifique se o período pactuado ainda cobre esse atraso na entrega.');
-      campoEntregaFrio.classList.add('invalid');
-    }
     if(dEAmb && dA && dEAmb < dA){
       erros.push('A <b>Data Prevista de Entrega · Termoestável</b> não pode ser anterior à <b>Data de Análise do Estoque</b>.');
       campoEntregaAmb.classList.add('invalid');
       campoAnalise.classList.add('invalid');
     }
+
+    // Entrega prevista após o fim da cobertura é incomum, mas pode ser
+    // legítima (ex.: atraso pactuado) — por isso é só um aviso e não zera
+    // os cálculos de todos os itens da tabela.
+    if(dEFrio && dF && dEFrio > dF){
+      avisos.push('A <b>Data Prevista de Entrega · Termolábil</b> está após a <b>Data Fim de Cobertura</b>; verifique se o período pactuado ainda cobre esse atraso na entrega.');
+    }
     if(dEAmb && dF && dEAmb > dF){
-      erros.push('A <b>Data Prevista de Entrega · Termoestável</b> está após a <b>Data Fim de Cobertura</b>; verifique se o período pactuado ainda cobre esse atraso na entrega.');
-      campoEntregaAmb.classList.add('invalid');
+      avisos.push('A <b>Data Prevista de Entrega · Termoestável</b> está após a <b>Data Fim de Cobertura</b>; verifique se o período pactuado ainda cobre esse atraso na entrega.');
     }
 
-    if(erros.length){
-      dateAlertList.innerHTML = erros.map(e=>`<li>${e}</li>`).join('');
+    const mensagens = [...erros, ...avisos];
+    if(mensagens.length){
+      dateAlertList.innerHTML = mensagens.map(e=>`<li>${e}</li>`).join('');
       dateAlert.style.display = 'flex';
     } else {
       dateAlertList.innerHTML = '';
       dateAlert.style.display = 'none';
     }
+    // Somente erros bloqueantes impedem os cálculos; avisos ficam visíveis
+    // mas não zeram a programação sugerida dos itens.
     return erros.length === 0;
   }
 
