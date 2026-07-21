@@ -1770,6 +1770,8 @@ situação adequada.<br>Cinza: item ainda sem dados preenchidos. Clique no ícon
         <table id="tabelaResumo" class="tabela-resumo">
           <thead>
             <tr>
+              <th>Status</th>
+              <th>Suficiência do pedido</th>
               <th>item(ns)</th>
               <th>Código SIGAF</th>
               <th>Quantidade a Pedir</th>
@@ -1777,7 +1779,7 @@ situação adequada.<br>Cinza: item ainda sem dados preenchidos. Clique no ícon
           </thead>
           <tbody id="tbodyResumo">
             <tr id="emptyRowResumo" class="empty-row">
-              <td colspan="3">Nenhum item adicionado ainda. Adicione itens na
+              <td colspan="5">Nenhum item adicionado ainda. Adicione itens na
 tabela acima para vê-los aqui.</td>
             </tr>
           </tbody>
@@ -2136,6 +2138,9 @@ const items = [
   const manualOverride = {};
   // quantidade final sugerida (já ajustada à quantidade por embalagem) por item, usada no resumo
   const sugeridaByKey = {};
+  // status de risco de desabastecimento e suficiência do pedido por item, usados no resumo
+  const statusByKey = {};
+  const suficienciaByKey = {};
 
   function buildRowI(item){
     const tr = document.createElement('tr');
@@ -2676,6 +2681,7 @@ receber, 0);
           : '';
         semRow.querySelector('.sem-status').innerHTML =
           `<span class="status-badge ${status}"><span class="dot"></span>${label}</span>${warningHTML}`;
+        statusByKey[k] = { status, label };
         setText(semRow.querySelector('.sem-ruptura'), (dF && diasCobertura) ? fmt(dF) : '—');
         setText(semRow.querySelector('.sem-dias'), diasCobertura);
         setText(semRow.querySelector('.sem-aconsumir'), aConsumir);
@@ -2711,6 +2717,7 @@ receber, 0);
         if(sufCell){
           sufCell.innerHTML = `<span class="status-badge ${sufStatus}"><span class="dot"></span>${sufLabel}</span>`;
         }
+        suficienciaByKey[k] = { status: sufStatus, label: sufLabel };
       }
 
       renderMemo(k, {
@@ -2741,7 +2748,7 @@ receber, 0);
     const chavesComQtd = selectedKeys.filter(k=> (sugeridaByKey[k] || 0) >= 1);
     if(chavesComQtd.length===0){
       resumoBody.innerHTML = `<tr id="emptyRowResumo" class="empty-row">
-        <td colspan="3">Nenhum item com quantidade sugerida maior ou igual a 1.
+        <td colspan="5">Nenhum item com quantidade sugerida maior ou igual a 1.
 Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
       resumoContagem.textContent = '';
       return;
@@ -2751,7 +2758,11 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
     resumoBody.innerHTML = ordenado.map(k=>{
       const item = itemsByKey[k];
       const qtd = sugeridaByKey[k] || 0;
+      const st = statusByKey[k] || { status:'gray', label:'Sem dados' };
+      const suf = suficienciaByKey[k] || { status:'gray', label:'Sem dados' };
       return `<tr>
+        <td><span class="status-badge ${st.status}"><span class="dot"></span>${st.label}</span></td>
+        <td><span class="status-badge ${suf.status}"><span class="dot"></span>${suf.label}</span></td>
         <td class="name">${item.name}</td>
         <td class="code">${item.code ? item.code : '—'}</td>
         <td class="qtd">${qtd}</td>
