@@ -116,13 +116,37 @@ transparent 60%);
     overflow:hidden;
   }
   .card-head{
-    padding:20px 26px 16px;
+    padding:22px 26px 18px;
     border-bottom:1px solid var(--border-soft);
     display:flex;
-    align-items:baseline;
+    align-items:flex-start;
     justify-content:space-between;
     gap:16px;
     flex-wrap:wrap;
+    background:linear-gradient(180deg, var(--surface) 0%, rgba(246,247,242,0) 100%);
+  }
+  .card-head-main{
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+  }
+  .step-badge{
+    flex-shrink:0;
+    width:34px;height:34px;
+    border-radius:10px;
+    background:linear-gradient(155deg, var(--sage) 0%, var(--sage-dark) 100%);
+    color:var(--white);
+    font-family:var(--serif);
+    font-weight:700;
+    font-size:15px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 2px 6px rgba(47,110,92,0.28);
+  }
+  .resumo-card .step-badge{
+    background:linear-gradient(155deg, #D9A44B 0%, var(--amber) 100%);
+    box-shadow:0 2px 6px rgba(185,133,46,0.32);
   }
   .card-head .label{
 
@@ -147,6 +171,37 @@ transparent 60%);
     line-height:1.5;
   }
   .card-body{ padding:22px 26px 26px; }
+  /* ---------- Subseções dentro de um card: agrupam campos/blocos
+     relacionados com um pequeno cabeçalho, para leitura mais rápida sem
+     precisar quebrar tudo em cards separados ---------- */
+  .subsection{ margin-bottom:26px; }
+  .subsection:last-child{ margin-bottom:0; }
+  .subsection-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin:0 0 14px;
+  }
+  .subsection-head .dash{
+    width:14px; height:2px;
+    background:var(--sage-dark);
+    border-radius:2px;
+    flex-shrink:0;
+  }
+  .subsection-head h3{
+    font-family:var(--sans);
+    font-size:12.5px;
+    font-weight:700;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0;
+  }
+  .subsection-head p{
+    margin:0 0 0 4px;
+    font-size:12px;
+    color:var(--ink-soft);
+  }
   /* ---------- Coverage timeline (signature element) ---------- */
   .coverage-wrap{ padding:22px 26px 26px; }
   .date-grid{
@@ -167,9 +222,10 @@ transparent 60%);
   }
   .field input, .field select{
     width:100%;
+    height:42px;
     font-family:var(--sans);
     font-size:14px;
-    padding:10px 12px;
+    padding:0 13px;
     border:1.5px solid var(--border);
     border-radius:var(--radius-sm);
     background:var(--white);
@@ -185,24 +241,10 @@ transparent 60%);
     background:var(--calc-bg);
     color:var(--calc-ink);
   }
-  /* Ênfase de tamanho para campos do estabelecimento */
+  /* Todos os campos de formulário (fora da tabela) compartilham a mesma
+     altura, tipografia e peso visual — o que muda entre eles é apenas
+     quantas colunas ocupam no grid, não o tamanho da caixa em si. */
   .field-lg{ grid-column:span 2; }
-  .field-lg label{
-    font-size:14.5px;
-    font-weight:700;
-  }
-  .field-lg input{
-    font-size:18px;
-    font-weight:600;
-    padding:13px 15px;
-  }
-  .field-sm label{
-    font-size:11.5px;
-  }
-  .field-sm input{
-    font-size:12.5px;
-    padding:7px 10px;
-  }
   @media (max-width:640px){
     .field-lg{ grid-column:span 1; }
   }
@@ -574,11 +616,14 @@ transparent 60%);
     border:none;
     color:var(--ink-soft);
     font-size:12px;
+    font-weight:600;
     text-decoration:underline;
+    text-underline-offset:2px;
     cursor:pointer;
     padding:4px 0;
     white-space:nowrap;
     font-family:var(--sans);
+    transition:color .15s ease;
   }
   .link-btn:hover{ color:#B3261E; }
   /* ---------- Adicionar item (seleção por checkbox) ---------- */
@@ -587,18 +632,19 @@ transparent 60%);
     align-items:center;
     gap:10px;
     width:100%;
+    height:42px;
     font-family:var(--sans);
     font-size:13.5px;
     font-weight:600;
-    padding:10px 14px;
-    border:1.5px solid var(--border);
+    padding:0 16px;
+    border:1.5px solid var(--sage-dark);
     border-radius:var(--radius-sm);
     background:var(--white);
     color:var(--ink);
     cursor:pointer;
     transition:border-color .15s ease, box-shadow .15s ease, background .15s ease;
   }
-  .btn-open-picker:hover{ background:var(--surface); }
+  .btn-open-picker:hover{ background:var(--surface); box-shadow:0 2px 8px rgba(47,110,92,0.12); }
   .btn-open-picker:focus-visible{
     outline:none;
     border-color:var(--sage-dark);
@@ -608,10 +654,10 @@ transparent 60%);
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    width:22px;height:22px;
+    width:24px;height:24px;
     border-radius:6px;
-    background:var(--surface-2);
-    color:var(--sage-deep);
+    background:var(--sage-deep);
+    color:var(--white);
     font-size:12px;
     flex-shrink:0;
   }
@@ -774,9 +820,10 @@ transparent 60%);
   }
   .search-bar input[type="search"]{
     width:100%;
+    height:42px;
     font-family:var(--sans);
     font-size:13.5px;
-    padding:10px 14px;
+    padding:0 14px;
     border:1.5px solid var(--border);
     border-radius:var(--radius-sm);
     background:var(--white);
@@ -1074,24 +1121,28 @@ transparent 60%);
     font-family:var(--sans);
     font-size:13.5px;
     font-weight:600;
-
-    padding:11px 20px;
+    padding:11px 22px;
     border-radius:var(--radius-sm);
     cursor:pointer;
     border:1.5px solid transparent;
     transition:all .15s ease;
   }
   button.primary{
-    background:var(--sage-deep);
+    background:linear-gradient(155deg, var(--sage-dark) 0%, var(--sage-deep) 100%);
     color:var(--white);
+    box-shadow:0 1px 2px rgba(47,110,92,0.15), 0 6px 16px rgba(47,110,92,0.22);
   }
-  button.primary:hover{ background:var(--sage-dark); }
+  button.primary:hover{ background:linear-gradient(155deg, var(--sage) 0%, var(--sage-dark) 100%); box-shadow:0 2px 4px rgba(47,110,92,0.18), 0 8px 20px rgba(47,110,92,0.28); transform:translateY(-1px); }
+  button.primary:active{ transform:translateY(0); box-shadow:0 1px 2px rgba(47,110,92,0.18); }
   button.ghost{
     background:var(--white);
     border-color:var(--border);
     color:var(--ink-soft);
+    box-shadow:0 1px 2px rgba(43,51,36,0.03);
   }
-  button.ghost:hover{ border-color:var(--sage-dark); color:var(--sage-deep); }
+  button.ghost:hover{ border-color:var(--sage-dark); color:var(--sage-deep); background:var(--surface); }
+  button.ghost:active{ background:var(--surface-2); }
+  button:focus-visible{ outline:none; box-shadow:0 0 0 3px rgba(79,169,138,0.35); }
   footer.page{
     text-align:center;
     padding:26px 20px 40px;
@@ -1267,45 +1318,58 @@ disponível e no consumo estimado.</p>
   <!-- ================= ESTABELECIMENTO DE SAÚDE ================= -->
   <section class="card">
     <div class="card-head">
-      <div>
-        <h2>Estabelecimento de saúde</h2>
+      <div class="card-head-main">
+        <span class="step-badge">1</span>
+        <div>
+          <div class="label">Etapa 1 · Identificação</div>
+          <h2>Estabelecimento e responsável</h2>
+          <p class="desc">Dados de quem está programando o pedido, usados para identificar o estabelecimento e permitir contato em caso de dúvidas.</p>
+        </div>
       </div>
     </div>
     <div class="coverage-wrap">
-      <div class="date-grid">
-        <div class="field field-sm">
-          <label>CNES do estabelecimento
-            <span class="hint" tabindex="0" data-tip="Informe o número do
+      <div class="subsection">
+        <div class="subsection-head"><span class="dash"></span><h3>Dados do estabelecimento</h3></div>
+        <div class="date-grid">
+          <div class="field">
+            <label>CNES do estabelecimento
+              <span class="hint" tabindex="0" data-tip="Informe o número do
 Cadastro Nacional de Estabelecimentos de Saúde (CNES), com 7 dígitos.">i</span>
-          </label>
-          <input type="text" id="estabCnes" inputmode="numeric" maxlength="7" placeholder="0000000" autocomplete="off">
-          <div class="field-error" id="estabCnesError">Informe um CNES válido, com 7 dígitos numéricos.</div>
+            </label>
+            <input type="text" id="estabCnes" inputmode="numeric" maxlength="7" placeholder="0000000" autocomplete="off">
+            <div class="field-error" id="estabCnesError">Informe um CNES válido, com 7 dígitos numéricos.</div>
+          </div>
+          <div class="field field-lg">
+            <label>Nome completo do estabelecimento</label>
+            <input type="text" id="estabNome" placeholder="Nome do estabelecimento de saúde" autocomplete="off">
+            <div class="field-error" id="estabNomeError">Informe o nome completo do estabelecimento.</div>
+          </div>
         </div>
-        <div class="field field-lg">
-          <label>Nome completo do estabelecimento</label>
-          <input type="text" id="estabNome" placeholder="Nome do estabelecimento de saúde" autocomplete="off">
-          <div class="field-error" id="estabNomeError">Informe o nome completo do estabelecimento.</div>
-        </div>
-        <div class="field field-lg">
-          <label>Nome completo do responsável</label>
-          <input type="text" id="estabResponsavel" placeholder="Nome completo do responsável" autocomplete="off">
-          <div class="field-error" id="estabResponsavelError">Informe o nome completo do responsável.</div>
-        </div>
-        <div class="field field-sm">
-          <label>Email
-            <span class="hint" tabindex="0" data-tip="Email de contato do
+      </div>
+      <div class="subsection">
+        <div class="subsection-head"><span class="dash"></span><h3>Responsável pela programação</h3></div>
+        <div class="date-grid">
+          <div class="field field-lg">
+            <label>Nome completo do responsável</label>
+            <input type="text" id="estabResponsavel" placeholder="Nome completo do responsável" autocomplete="off">
+            <div class="field-error" id="estabResponsavelError">Informe o nome completo do responsável.</div>
+          </div>
+          <div class="field">
+            <label>Email
+              <span class="hint" tabindex="0" data-tip="Email de contato do
 responsável pela programação, para eventuais dúvidas ou retorno.">i</span>
-          </label>
-          <input type="email" id="estabEmail" placeholder="nome@exemplo.com" autocomplete="off">
-          <div class="field-error" id="estabEmailError">Informe um email válido (ex.: nome@exemplo.com).</div>
-        </div>
-        <div class="field field-sm">
-          <label>Telefone
-            <span class="hint" tabindex="0" data-tip="Informe o telefone com
+            </label>
+            <input type="email" id="estabEmail" placeholder="nome@exemplo.com" autocomplete="off">
+            <div class="field-error" id="estabEmailError">Informe um email válido (ex.: nome@exemplo.com).</div>
+          </div>
+          <div class="field">
+            <label>Telefone
+              <span class="hint" tabindex="0" data-tip="Informe o telefone com
 DDD entre parênteses, no formato (xx) xxxxx-xxxx.">i</span>
-          </label>
-          <input type="tel" id="estabTelefone" placeholder="(xx) xxxxx-xxxx" autocomplete="off">
-          <div class="field-error" id="estabTelefoneError">Informe o telefone com DDD, no formato (xx) xxxxx-xxxx.</div>
+            </label>
+            <input type="tel" id="estabTelefone" placeholder="(xx) xxxxx-xxxx" autocomplete="off">
+            <div class="field-error" id="estabTelefoneError">Informe o telefone com DDD, no formato (xx) xxxxx-xxxx.</div>
+          </div>
         </div>
       </div>
     </div>
@@ -1313,8 +1377,13 @@ DDD entre parênteses, no formato (xx) xxxxx-xxxx.">i</span>
   <!-- ================= COBERTURA ================= -->
   <section class="card">
     <div class="card-head">
-      <div>
-        <h2>Período de cobertura</h2>
+      <div class="card-head-main">
+        <span class="step-badge">2</span>
+        <div>
+          <div class="label">Etapa 2 · Prazos</div>
+          <h2>Período de cobertura e entrega</h2>
+          <p class="desc">Datas que definem a janela de cálculo: quando o estoque foi analisado, o período que a programação vai cobrir e as entregas previstas por categoria térmica.</p>
+        </div>
       </div>
     </div>
     <div class="coverage-wrap">
@@ -1406,17 +1475,21 @@ id="timelineFill"></div><div class="timeline-marker marker-frio" id="timelineMar
   <!-- ================= PARTE I + SEMÁFORO (tabela única) ================= -->
   <section class="card">
     <div class="card-head">
-      <div>
-        <h2>Programação</h2>
-        <p class="desc">Busque abaixo e adicione apenas os medicamentos/produtos
-que o município vai programar. Para cada item adicionado, preencha os campos em
-destaque, incluindo a quantidade por embalagem — as colunas de semáforo (à
+      <div class="card-head-main">
+        <span class="step-badge">3</span>
+        <div>
+          <div class="label">Etapa 3 · Itens</div>
+          <h2>Itens programados</h2>
+          <p class="desc">Selecione os medicamentos/produtos que o município vai programar e preencha os campos em
+destaque para cada um — a quantidade por embalagem e as colunas de semáforo (à
 direita, em cinza) são calculadas automaticamente a partir desses dados e do
 período de cobertura. Passe o cursor sobre <span class="hint" style="vertical-align:-2px" data-tip="Ícones como este trazem a orientação oficial de preenchimento de cada
 campo.">i</span> para ver a orientação oficial.</p>
+        </div>
       </div>
     </div>
     <div class="card-body" style="padding-bottom:0;">
+      <div class="subsection-head"><span class="dash"></span><h3>Visão geral do período</h3></div>
       <div class="stat-groups">
         <div class="stat-group">
           <p class="stat-group-title">Período de cobertura vigente</p>
@@ -1445,60 +1518,25 @@ campo.">i</span> para ver a orientação oficial.</p>
           </div>
         </div>
       </div>
-      <div class="legend-panel">
-        <p class="legend-subtitle">Status de risco de desabastecimento <span class="hint" tabindex="0" data-tip="Compara o estoque futuro projetado com o consumo estimado de cada item, considerando as datas de entrega e o período de cobertura informados.">i</span></p>
-        <div class="legend-row">
-          <div class="legend-stat st-red">
-            <span class="dot red"></span>
-            <div><div class="num" id="semCountRed">0</div><div class="cap">Itens em risco de desabastecimento</div></div>
-          </div>
-          <div class="legend-stat st-amber">
-            <span class="dot amber"></span>
-            <div><div class="num" id="semCountAmber">0</div><div class="cap">Itens com estoque excedente</div></div>
-          </div>
-          <div class="legend-stat st-green">
-            <span class="dot green"></span>
-            <div><div class="num" id="semCountGreen">0</div><div class="cap">Itens com estoque adequado</div></div>
-          </div>
-          <div class="legend-stat st-gray">
-            <span class="dot gray"></span>
-            <div><div class="num" id="semCountGray">0</div><div class="cap">Itens sem dados preenchidos</div></div>
-          </div>
-        </div>
-      </div>
-      <div class="legend-panel">
-        <p class="legend-subtitle">Suficiência do pedido <span class="hint" tabindex="0" data-tip="Indicador independente do semáforo de ruptura acima: compara a quantidade solicitada (programação sugerida, já ajustada à embalagem) com a quantidade necessária calculada para o período futuro de cobertura.">i</span></p>
-        <div class="legend-row">
-          <div class="legend-stat st-green">
-            <span class="dot green"></span>
-            <div><div class="num" id="sufCountGreen">0</div><div class="cap">Itens com pedido suficiente</div></div>
-          </div>
-          <div class="legend-stat st-red">
-            <span class="dot red"></span>
-            <div><div class="num" id="sufCountRed">0</div><div class="cap">Itens com pedido insuficiente</div></div>
-          </div>
-          <div class="legend-stat st-gray">
-            <span class="dot gray"></span>
-            <div><div class="num" id="sufCountGray">0</div><div class="cap">Itens sem dados preenchidos</div></div>
-          </div>
-        </div>
-      </div>
     </div>
-    <div class="search-bar">
-      <div class="search-field">
-        <button type="button" class="btn-open-picker" id="btnAbrirSelecao">
-          <span class="picker-icon" aria-hidden="true">☰</span>
-          Selecionar medicamentos/produtos da lista
-        </button>
-        <div class="search-field-meta">
-          <span class="count" id="contagemAdicionados">Nenhum item adicionado</span>
-          <button type="button" class="link-btn" id="btnLimparSelecao">Remover todos os itens</button>
+    <div class="card-body" style="padding-top:0;padding-bottom:0;">
+      <div class="subsection-head"><span class="dash"></span><h3>Selecionar itens</h3></div>
+      <div class="search-bar" style="padding-top:0;">
+        <div class="search-field">
+          <button type="button" class="btn-open-picker" id="btnAbrirSelecao">
+            <span class="picker-icon" aria-hidden="true">☰</span>
+            Selecionar medicamentos/produtos da lista
+          </button>
+          <div class="search-field-meta">
+            <span class="count" id="contagemAdicionados">Nenhum item adicionado</span>
+            <button type="button" class="link-btn" id="btnLimparSelecao">Remover todos os itens</button>
+          </div>
         </div>
-      </div>
-      <div class="search-field">
-        <input type="search" id="filtroSemaforo" placeholder="Filtrar itens já adicionados, por nome ou código SIGAF…">
-        <div class="search-field-meta">
-          <span class="count" id="contagemSemaforo"></span>
+        <div class="search-field">
+          <input type="search" id="filtroSemaforo" placeholder="Filtrar itens já adicionados, por nome ou código SIGAF…">
+          <div class="search-field-meta">
+            <span class="count" id="contagemSemaforo"></span>
+          </div>
         </div>
       </div>
     </div>
@@ -1524,6 +1562,9 @@ campo.">i</span> para ver a orientação oficial.</p>
           <button type="button" class="btn-picker-done" id="btnConcluirSelecao">Concluído</button>
         </div>
       </div>
+    </div>
+    <div class="card-body" style="padding-top:0;padding-bottom:0;">
+      <div class="subsection-head" style="margin-top:6px;"><span class="dash"></span><h3>Tabela de programação</h3></div>
     </div>
     <div class="table-scroll">
       <table id="tabelaI">
@@ -1596,6 +1637,47 @@ para adicionar os medicamentos/produtos que serão programados.</td>
         </tbody>
       </table>
     </div>
+    <div class="card-body">
+      <div class="subsection-head"><span class="dash"></span><h3>Indicadores de risco e suficiência</h3></div>
+      <div class="legend-panel">
+        <p class="legend-subtitle">Status de risco de desabastecimento <span class="hint" tabindex="0" data-tip="Compara o estoque futuro projetado com o consumo estimado de cada item, considerando as datas de entrega e o período de cobertura informados.">i</span></p>
+        <div class="legend-row">
+          <div class="legend-stat st-red">
+            <span class="dot red"></span>
+            <div><div class="num" id="semCountRed">0</div><div class="cap">Itens em risco de desabastecimento</div></div>
+          </div>
+          <div class="legend-stat st-amber">
+            <span class="dot amber"></span>
+            <div><div class="num" id="semCountAmber">0</div><div class="cap">Itens com estoque excedente</div></div>
+          </div>
+          <div class="legend-stat st-green">
+            <span class="dot green"></span>
+            <div><div class="num" id="semCountGreen">0</div><div class="cap">Itens com estoque adequado</div></div>
+          </div>
+          <div class="legend-stat st-gray">
+            <span class="dot gray"></span>
+            <div><div class="num" id="semCountGray">0</div><div class="cap">Itens sem dados preenchidos</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="legend-panel" style="margin-bottom:0;">
+        <p class="legend-subtitle">Suficiência do pedido <span class="hint" tabindex="0" data-tip="Indicador independente do semáforo de ruptura acima: compara a quantidade solicitada (programação sugerida, já ajustada à embalagem) com a quantidade necessária calculada para o período futuro de cobertura.">i</span></p>
+        <div class="legend-row">
+          <div class="legend-stat st-green">
+            <span class="dot green"></span>
+            <div><div class="num" id="sufCountGreen">0</div><div class="cap">Itens com pedido suficiente</div></div>
+          </div>
+          <div class="legend-stat st-red">
+            <span class="dot red"></span>
+            <div><div class="num" id="sufCountRed">0</div><div class="cap">Itens com pedido insuficiente</div></div>
+          </div>
+          <div class="legend-stat st-gray">
+            <span class="dot gray"></span>
+            <div><div class="num" id="sufCountGray">0</div><div class="cap">Itens sem dados preenchidos</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="foot-note">Os valores de
 estoque e consumo devem ser informados em unidades farmacêuticas (frascos ou
 carpules, conforme a apresentação). As colunas de semáforo são atualizadas
@@ -1609,10 +1691,13 @@ situação adequada.<br>Cinza: item ainda sem dados preenchidos. Clique no ícon
   <!-- ================= RESUMO PARA LANÇAMENTO NO SIGAF ================= -->
   <section class="card resumo-card">
     <div class="card-head">
-      <div>
-        <div class="label">Resumo final</div>
-        <h2>Resumo do pedido — lançar no SIGAF</h2>
-        <p class="desc">Resumo para o pedido no SIGAF, verifique antes de lançar.</p>
+      <div class="card-head-main">
+        <span class="step-badge">4</span>
+        <div>
+          <div class="label">Etapa 4 · Conferência</div>
+          <h2>Resumo do pedido — lançar no SIGAF</h2>
+          <p class="desc">Confira as quantidades finais por item antes de lançar o pedido no SIGAF.</p>
+        </div>
       </div>
       <span class="count" id="resumoContagem"></span>
     </div>
