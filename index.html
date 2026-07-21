@@ -204,6 +204,25 @@ transparent 60%);
   }
   /* ---------- Coverage timeline (signature element) ---------- */
   .coverage-wrap{ padding:22px 26px 26px; }
+  .date-group{
+    background:var(--surface);
+    border:1px solid var(--border-soft);
+    border-radius:var(--radius-md);
+    padding:16px 18px 18px;
+    margin-bottom:14px;
+  }
+  .date-group-title{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--ink-soft);
+    margin:0 0 14px;
+  }
+  .date-group .date-grid{ margin-bottom:0; }
   .date-grid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
@@ -213,12 +232,14 @@ transparent 60%);
   .field{ position:relative; }
   .field label{
     display:flex;
-    align-items:center;
+    align-items:flex-start;
     gap:6px;
     font-size:12.5px;
     font-weight:600;
     color:var(--ink);
     margin-bottom:7px;
+    min-height:32px;
+    line-height:1.3;
   }
   .field input, .field select{
     width:100%;
@@ -587,6 +608,7 @@ transparent 60%);
   .term-dot{
     width:8px;height:8px;border-radius:2px;flex-shrink:0;display:inline-block;
   }
+  .field label .term-dot{ margin-top:4px; }
   .term-dot.dot-frio{ background:var(--sage-deep); }
   .term-dot.dot-amb{ background:var(--amber); }
   /* ---------- Search bar ---------- */
@@ -935,65 +957,88 @@ transparent 60%);
     background:var(--surface);
     line-height:1.6;
   }
-  /* ---------- Semáforo de status ---------- */
-  .legend-panel{
-    background:var(--surface);
+  /* ---------- Indicadores de risco e suficiência ---------- */
+  .indicators-panel{
+    background:linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
     border:1px solid var(--border-soft);
-    border-radius:var(--radius-md);
-    padding:16px 18px 18px;
-    margin-bottom:16px;
+    border-radius:var(--radius-lg);
+    padding:26px 28px 28px;
   }
-  .legend-panel .legend-row{ margin-bottom:0; }
-  .legend-panel .legend-subtitle{
-    margin:0 0 12px;
-    padding-top:0;
-    border-top:0;
+  .indicators-grid{
+    display:grid;
+    grid-template-columns:1fr auto 1fr;
+    gap:28px;
+    align-items:stretch;
+  }
+  .indicator-group{ min-width:0; }
+  .indicator-divider{
+    width:1px;
+    align-self:stretch;
+    background:linear-gradient(180deg, transparent 0%, var(--border) 12%, var(--border) 88%, transparent 100%);
+  }
+  .legend-subtitle{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--serif);
+    font-size:15px;
+    font-weight:700;
+    letter-spacing:0.005em;
+    color:var(--ink);
+    text-transform:none;
+    margin:0 0 16px;
+    padding-bottom:12px;
+    border-bottom:1px solid var(--border-soft);
   }
   .legend-row{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-    gap:14px;
-    margin-bottom:20px;
-  }
-  .legend-stat{
-    background:var(--white);
-    border:1px solid var(--border-soft);
-    border-left:4px solid var(--border-soft);
-    border-radius:var(--radius-md);
-    padding:14px 16px;
-    display:flex;
-    align-items:center;
     gap:12px;
   }
-  .legend-stat.st-red{ border-left-color:#B3261E; }
-  .legend-stat.st-amber{ border-left-color:var(--amber); }
-  .legend-stat.st-green{ border-left-color:var(--sage-deep); }
-  .legend-stat.st-gray{ border-left-color:#8A9080; }
-  .legend-stat .dot{ width:12px;height:12px;border-radius:50%;flex-shrink:0; }
-  .legend-stat .dot.red{ background:#B3261E; }
-  .legend-stat .dot.amber{ background:var(--amber); }
-  .legend-stat .dot.green{ background:var(--sage-deep); }
-  .legend-stat .dot.gray{ background:#8A9080; }
+  .legend-stat{
+    position:relative;
+    background:var(--white);
+    border:1px solid var(--border-soft);
+    border-radius:var(--radius-md);
+    padding:15px 16px 14px;
+    display:flex;
+    align-items:center;
+    gap:13px;
+    box-shadow:0 1px 2px rgba(43,51,36,0.03);
+    transition:box-shadow .18s ease, transform .18s ease, border-color .18s ease;
+  }
+  .legend-stat:hover{
+    box-shadow:0 6px 16px rgba(43,51,36,0.08);
+    transform:translateY(-1px);
+  }
+  .legend-stat.st-red{ border-color:rgba(179,38,30,0.22); }
+  .legend-stat.st-amber{ border-color:rgba(185,133,46,0.24); }
+  .legend-stat.st-green{ border-color:rgba(47,110,92,0.22); }
+  .legend-stat.st-gray{ border-color:var(--border-soft); }
+  .legend-icon{
+    flex-shrink:0;
+    width:36px;height:36px;
+    border-radius:50%;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .legend-icon svg{ width:17px;height:17px; }
+  .legend-icon.icon-red{ background:#FBEAE7; color:#B3261E; }
+  .legend-icon.icon-amber{ background:var(--amber-bg); color:var(--amber); }
+  .legend-icon.icon-green{ background:#EAF1E1; color:var(--sage-deep); }
+  .legend-icon.icon-gray{ background:#F0F2EB; color:#8A9080; }
   .legend-stat .num{
     font-family:var(--serif);
-    font-size:22px;
+    font-size:23px;
     font-weight:700;
     color:var(--ink);
     line-height:1;
   }
-  .legend-stat .cap{ font-size:11.5px; color:var(--ink-soft); margin-top:3px; }
-  .legend-subtitle{
-    display:flex;
-    align-items:center;
-    gap:7px;
-    font-size:12.5px;
-    font-weight:700;
-    letter-spacing:0.02em;
-    color:var(--ink-soft);
-    text-transform:uppercase;
-    margin:4px 0 12px;
-    padding-top:10px;
-    border-top:1px dashed var(--border);
+  .legend-stat .cap{ font-size:11.5px; color:var(--ink-soft); margin-top:4px; line-height:1.3; }
+  @media (max-width:860px){
+    .indicators-grid{ grid-template-columns:1fr; gap:22px; }
+    .indicator-divider{ width:auto; height:1px; }
   }
   .status-badge{
     display:inline-flex;
@@ -1388,59 +1433,69 @@ DDD entre parênteses, no formato (xx) xxxxx-xxxx.">i</span>
     </div>
     <div class="coverage-wrap">
 
-      <div class="date-grid">
-        <div class="field">
-          <label>Data de Análise do Estoque<span class="required-mark" title="Campo obrigatório">*</span>
-            <span class="hint" tabindex="0" data-tip="Obrigatório. Informe a
+      <div class="date-group">
+        <p class="date-group-title">Período de cobertura</p>
+        <div class="date-grid">
+          <div class="field">
+            <label>Data de Análise do Estoque<span class="required-mark" title="Campo obrigatório">*</span>
+              <span class="hint" tabindex="0" data-tip="Obrigatório. Informe a
 data em que o estoque foi verificado, no sistema físico e/ou virtual (SIGAF
 ou sistema próprio). Preferencialmente, realize essa análise no dia da
 programação ou o mais próximo possível.">i</span>
-          </label>
-          <input type="date" id="dataAnalise" required>
-        </div>
-        <div class="field">
-          <label>Data Início de Cobertura<span class="required-mark" title="Campo obrigatório">*</span>
-            <span class="hint" tabindex="0" data-tip="Obrigatório. Preencha
+            </label>
+            <input type="date" id="dataAnalise" required>
+          </div>
+          <div class="field">
+            <label>Data Início de Cobertura<span class="required-mark" title="Campo obrigatório">*</span>
+              <span class="hint" tabindex="0" data-tip="Obrigatório. Preencha
 as datas de início e fim da cobertura da programação vigente. Essas datas
 estão disponíveis na Nota Informativa de abertura da programação (item
 'Cobertura pactuada').">i</span>
-          </label>
-          <input type="date" id="dataInicio" required>
-        </div>
-        <div class="field">
-          <label>Data Fim de Cobertura<span class="required-mark" title="Campo obrigatório">*</span>
-            <span class="hint" tabindex="0" data-tip="Obrigatório. Preencha
+            </label>
+            <input type="date" id="dataInicio" required>
+          </div>
+          <div class="field">
+            <label>Data Fim de Cobertura<span class="required-mark" title="Campo obrigatório">*</span>
+              <span class="hint" tabindex="0" data-tip="Obrigatório. Preencha
 as datas de início e fim da cobertura da programação vigente. Essas datas
 estão disponíveis na Nota Informativa de abertura da programação (item
 'Cobertura pactuada').">i</span>
-          </label>
-          <input type="date" id="dataFim" required>
+              </label>
+            <input type="date" id="dataFim" required>
+          </div>
         </div>
-        <div class="field">
-          <label>Data Prevista de Entrega · Termolábil<span class="required-mark" title="Campo obrigatório">*</span>
-            <span class="hint" tabindex="0" data-tip="Obrigatório. Informe a
+      </div>
+
+      <div class="date-group">
+        <p class="date-group-title">Datas previstas de entrega, por categoria térmica</p>
+        <div class="date-grid">
+          <div class="field">
+            <label><span class="term-dot dot-frio" aria-hidden="true"></span>Termolábil<span class="required-mark" title="Campo obrigatório">*</span>
+              <span class="hint" tabindex="0" data-tip="Obrigatório. Informe a
 data prevista para a entrega efetiva dos itens termolábeis (que exigem
 refrigeração/cadeia de frio) programados neste estabelecimento. Pode ser
 diferente da Data Início de Cobertura pactuada. Enquanto não for preenchida,
 os cálculos desses itens ficam zerados — não há substituição automática por
 outra data.">i</span>
-          </label>
-          <input type="date" id="dataEntregaFrio" required>
-          <div class="field-error" id="dataEntregaFrioError">A Data Prevista de Entrega (Termolábil) é obrigatória e não pode ser anterior à Data de Análise do Estoque.</div>
-        </div>
-        <div class="field">
-          <label>Data Prevista de Entrega · Termoestável<span class="required-mark" title="Campo obrigatório">*</span>
-            <span class="hint" tabindex="0" data-tip="Obrigatório. Informe a
+            </label>
+            <input type="date" id="dataEntregaFrio" required>
+            <div class="field-error" id="dataEntregaFrioError">A Data Prevista de Entrega (Termolábil) é obrigatória e não pode ser anterior à Data de Análise do Estoque.</div>
+          </div>
+          <div class="field">
+            <label><span class="term-dot dot-amb" aria-hidden="true"></span>Termoestável<span class="required-mark" title="Campo obrigatório">*</span>
+              <span class="hint" tabindex="0" data-tip="Obrigatório. Informe a
 data prevista para a entrega efetiva dos itens termoestáveis (sem exigência
 de cadeia de frio) programados neste estabelecimento. Pode ser diferente da
 Data Início de Cobertura pactuada. Enquanto não for preenchida, os cálculos
 desses itens ficam zerados — não há substituição automática por outra
 data.">i</span>
-          </label>
-          <input type="date" id="dataEntregaAmb" required>
-          <div class="field-error" id="dataEntregaAmbError">A Data Prevista de Entrega (Termoestável) é obrigatória e não pode ser anterior à Data de Análise do Estoque.</div>
+            </label>
+            <input type="date" id="dataEntregaAmb" required>
+            <div class="field-error" id="dataEntregaAmbError">A Data Prevista de Entrega (Termoestável) é obrigatória e não pode ser anterior à Data de Análise do Estoque.</div>
+          </div>
         </div>
       </div>
+
       <div class="date-alert" id="dateAlert" style="display:none;">
         <span class="icon">!</span>
         <div>
@@ -1639,41 +1694,46 @@ para adicionar os medicamentos/produtos que serão programados.</td>
     </div>
     <div class="card-body">
       <div class="subsection-head"><span class="dash"></span><h3>Indicadores de risco e suficiência</h3></div>
-      <div class="legend-panel">
-        <p class="legend-subtitle">Status de risco de desabastecimento <span class="hint" tabindex="0" data-tip="Compara o estoque futuro projetado com o consumo estimado de cada item, considerando as datas de entrega e o período de cobertura informados.">i</span></p>
-        <div class="legend-row">
-          <div class="legend-stat st-red">
-            <span class="dot red"></span>
-            <div><div class="num" id="semCountRed">0</div><div class="cap">Itens em risco de desabastecimento</div></div>
+      <div class="indicators-panel">
+        <div class="indicators-grid">
+          <div class="indicator-group">
+            <p class="legend-subtitle">Status de risco de desabastecimento <span class="hint" tabindex="0" data-tip="Compara o estoque futuro projetado com o consumo estimado de cada item, considerando as datas de entrega e o período de cobertura informados.">i</span></p>
+            <div class="legend-row">
+              <div class="legend-stat st-red">
+                <span class="legend-icon icon-red" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 17h.01"/></svg></span>
+                <div><div class="num" id="semCountRed">0</div><div class="cap">Itens em risco de desabastecimento</div></div>
+              </div>
+              <div class="legend-stat st-amber">
+                <span class="legend-icon icon-amber" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H8"/><path d="m14 6 6 6-6 6"/><path d="M4 4v16"/></svg></span>
+                <div><div class="num" id="semCountAmber">0</div><div class="cap">Itens com estoque excedente</div></div>
+              </div>
+              <div class="legend-stat st-green">
+                <span class="legend-icon icon-green" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+                <div><div class="num" id="semCountGreen">0</div><div class="cap">Itens com estoque adequado</div></div>
+              </div>
+              <div class="legend-stat st-gray">
+                <span class="legend-icon icon-gray" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v.01"/><path d="M12 12v4"/></svg></span>
+                <div><div class="num" id="semCountGray">0</div><div class="cap">Itens sem dados preenchidos</div></div>
+              </div>
+            </div>
           </div>
-          <div class="legend-stat st-amber">
-            <span class="dot amber"></span>
-            <div><div class="num" id="semCountAmber">0</div><div class="cap">Itens com estoque excedente</div></div>
-          </div>
-          <div class="legend-stat st-green">
-            <span class="dot green"></span>
-            <div><div class="num" id="semCountGreen">0</div><div class="cap">Itens com estoque adequado</div></div>
-          </div>
-          <div class="legend-stat st-gray">
-            <span class="dot gray"></span>
-            <div><div class="num" id="semCountGray">0</div><div class="cap">Itens sem dados preenchidos</div></div>
-          </div>
-        </div>
-      </div>
-      <div class="legend-panel" style="margin-bottom:0;">
-        <p class="legend-subtitle">Suficiência do pedido <span class="hint" tabindex="0" data-tip="Indicador independente do semáforo de ruptura acima: compara a quantidade solicitada (programação sugerida, já ajustada à embalagem) com a quantidade necessária calculada para o período futuro de cobertura.">i</span></p>
-        <div class="legend-row">
-          <div class="legend-stat st-green">
-            <span class="dot green"></span>
-            <div><div class="num" id="sufCountGreen">0</div><div class="cap">Itens com pedido suficiente</div></div>
-          </div>
-          <div class="legend-stat st-red">
-            <span class="dot red"></span>
-            <div><div class="num" id="sufCountRed">0</div><div class="cap">Itens com pedido insuficiente</div></div>
-          </div>
-          <div class="legend-stat st-gray">
-            <span class="dot gray"></span>
-            <div><div class="num" id="sufCountGray">0</div><div class="cap">Itens sem dados preenchidos</div></div>
+          <div class="indicator-divider"></div>
+          <div class="indicator-group">
+            <p class="legend-subtitle">Suficiência do pedido <span class="hint" tabindex="0" data-tip="Indicador independente do semáforo de ruptura acima: compara a quantidade solicitada (programação sugerida, já ajustada à embalagem) com a quantidade necessária calculada para o período futuro de cobertura.">i</span></p>
+            <div class="legend-row">
+              <div class="legend-stat st-green">
+                <span class="legend-icon icon-green" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+                <div><div class="num" id="sufCountGreen">0</div><div class="cap">Itens com pedido suficiente</div></div>
+              </div>
+              <div class="legend-stat st-red">
+                <span class="legend-icon icon-red" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg></span>
+                <div><div class="num" id="sufCountRed">0</div><div class="cap">Itens com pedido insuficiente</div></div>
+              </div>
+              <div class="legend-stat st-gray">
+                <span class="legend-icon icon-gray" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v.01"/><path d="M12 12v4"/></svg></span>
+                <div><div class="num" id="sufCountGray">0</div><div class="cap">Itens sem dados preenchidos</div></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
