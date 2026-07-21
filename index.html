@@ -1550,8 +1550,8 @@ campo.">i</span> para ver a orientação oficial.</p>
           <p class="stat-group-title">Período de cobertura vigente</p>
           <div class="stat-group-items">
             <div class="stat-mini">
-              <div class="num" id="statMeses">0</div>
-              <div class="cap">Cobertura (em meses)</div>
+              <div class="num" id="statDataRuptura">—</div>
+              <div class="cap">Data provável de ruptura mais próxima</div>
             </div>
             <div class="stat-mini">
               <div class="num" id="statDias">0</div>
@@ -1669,7 +1669,7 @@ tabindex="0" data-tip="Sugerido automaticamente a partir da quantidade
 
 necessária. Pode ser ajustado manualmente conforme diretriz do Ministério da
 Saúde.">i</span></div></th>
-            <th class="col-detail"><div class="th-flex">Cobertura (meses)<span class="hint" tabindex="0" data-tip="Cobertura do período vigente calculada na primeira seção (Data Início a Data Fim de Cobertura).">i</span></div></th>
+            <th class="col-detail"><div class="th-flex">Data provável de ruptura mais próxima<span class="hint" tabindex="0" data-tip="Data final do período de cobertura vigente (Data Fim de Cobertura), calculada na primeira seção — data em que o estoque programado se esgota, caso não haja reposição.">i</span></div></th>
             <th class="col-detail"><div class="th-flex">Cobertura (dias)<span class="hint" tabindex="0" data-tip="Cobertura do período vigente, em dias corridos, calculada na primeira seção.">i</span></div></th>
             <th class="col-detail"><div class="th-flex">Quantitativo a consumir até a entrega (un)<span class="hint" tabindex="0" data-tip="Consumo estimado mensal proporcional aos dias entre a Data de Análise e a Data Prevista de Entrega correspondente à categoria do item (Termolábil ou Termoestável). Todas as datas são obrigatórias; sem a Data Prevista de Entrega específica, este valor fica zerado.">i</span></div></th>
             <th class="col-detail"><div class="th-flex">quantitativo no estoque futuro (un)<span class="hint" tabindex="0" data-tip="Estoque disponível − a consumir até a entrega − reservado − vencimento próximo + a receber.">i</span></div></th>
@@ -2156,7 +2156,7 @@ const items = [
         <input type="number" min="0" value="0" class="editable-final" data-key="${item.key}" data-col="programacao">
         <span class="override-badge hint" tabindex="0" data-badge-key="${item.key}" data-tip="Valor ajustado manualmente pelo farmacêutico — diferente do cálculo automático." style="display:none;">✎</span>
       </div></td>
-      <td class="result sem-meses col-detail">0</td>
+      <td class="result sem-ruptura col-detail">—</td>
       <td class="result sem-dias col-detail">0</td>
       <td class="result sem-aconsumir col-detail">0</td>
       <td class="result sem-futuro col-detail">0</td>
@@ -2571,8 +2571,8 @@ const items = [
     // lugar de uma Data Prevista de Entrega não preenchida.
     const diasAteEntregaFrio = (dA && dEFrio && datasValidas) ? Math.max(daysBetween(dA,dEFrio),0) : 0;
     const diasAteEntregaAmb = (dA && dEAmb && datasValidas) ? Math.max(daysBetween(dA,dEAmb),0) : 0;
-    document.getElementById('statMeses').textContent = mesesCobertura ?
-mesesCobertura.toFixed(1) : '0';
+    document.getElementById('statDataRuptura').textContent = (dF && diasCobertura) ?
+fmt(dF) : '—';
     document.getElementById('statDias').textContent = diasCobertura;
     document.getElementById('statDiasAteEntregaFrio').textContent = diasAteEntregaFrio;
     document.getElementById('statDiasAteEntregaAmb').textContent = diasAteEntregaAmb;
@@ -2676,7 +2676,7 @@ receber, 0);
           : '';
         semRow.querySelector('.sem-status').innerHTML =
           `<span class="status-badge ${status}"><span class="dot"></span>${label}</span>${warningHTML}`;
-        setText(semRow.querySelector('.sem-meses'), mesesCobertura ? mesesCobertura.toFixed(1) : '0');
+        setText(semRow.querySelector('.sem-ruptura'), (dF && diasCobertura) ? fmt(dF) : '—');
         setText(semRow.querySelector('.sem-dias'), diasCobertura);
         setText(semRow.querySelector('.sem-aconsumir'), aConsumir);
         setText(semRow.querySelector('.sem-futuro'), futuro);
@@ -2808,7 +2808,7 @@ window.print());
       'Consumo estimado no mês (un)','Estoque disponível (un)',
       'Reservado para outros programas (un)','Vencimento próximo (un)',
       'A receber (un)','Margem de segurança (%)','Programação de ajuste (un)',
-      'Cobertura (meses)','Cobertura (dias)',
+      'Data provável de ruptura mais próxima','Cobertura (dias)',
       'A consumir até a entrega (un)','Estoque futuro (un)',
       'Estoque de segurança (un)','Quantidade necessária (un)',
       'Programação sugerida (ajuste à embalagem) (un)','Quantidade excedente (un)',
@@ -2847,7 +2847,7 @@ window.print());
         getVal('receber'),
         getVal('margem'),
         getVal('programacao'),
-        getResult('sem-meses'),
+        getResult('sem-ruptura'),
         getResult('sem-dias'),
         getResult('sem-aconsumir'),
         getResult('sem-futuro'),
