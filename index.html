@@ -1626,7 +1626,7 @@ campo.">i</span> para ver a orientação oficial.</p>
         <thead>
           <tr>
             <th>Status</th>
-            <th><div class="th-flex">Suficiência do pedido<span class="hint" tabindex="0" data-tip="Indicador independente do semáforo de ruptura: fica verde quando a quantidade solicitada (programação sugerida) é suficiente para cobrir a necessidade calculada do período futuro; fica vermelho quando fica abaixo dela.">i</span></div></th>
+            <th><div class="th-flex">Suficiência do pedido<span class="hint" tabindex="0" data-tip="Indicador independente do semáforo de ruptura: fica verde quando a quantidade solicitada (programação sugerida) cobre a necessidade calculada do período futuro sem sobra relevante; fica âmbar quando o pedido excede a quantidade necessária em uma embalagem inteira ou mais; fica vermelho quando fica abaixo dela.">i</span></div></th>
             <th style="min-width:220px;">item(ns)</th>
             <th>Código SIGAF</th>
             <th><div class="th-flex">Quantidade por embalagem (un)<span class="hint" tabindex="0" data-tip="Quantidade por embalagem: quantidade de unidades farmacêuticas contida em cada
@@ -1719,7 +1719,7 @@ para adicionar os medicamentos/produtos que serão programados.</td>
           </div>
           <div class="indicator-divider"></div>
           <div class="indicator-group">
-            <p class="legend-subtitle">Suficiência do pedido <span class="hint" tabindex="0" data-tip="Indicador independente do semáforo de ruptura acima: compara a quantidade solicitada (programação sugerida, já ajustada à embalagem) com a quantidade necessária calculada para o período futuro de cobertura.">i</span></p>
+            <p class="legend-subtitle">Suficiência do pedido <span class="hint" tabindex="0" data-tip="Indicador independente do semáforo de ruptura acima: compara a quantidade solicitada (programação sugerida, já ajustada à embalagem) com a quantidade necessária calculada para o período futuro de cobertura. Âmbar indica que o pedido excede a quantidade necessária em uma embalagem inteira ou mais.">i</span></p>
             <div class="legend-row">
               <div class="legend-stat st-green">
                 <span class="legend-icon icon-green" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
@@ -1728,6 +1728,10 @@ para adicionar os medicamentos/produtos que serão programados.</td>
               <div class="legend-stat st-red">
                 <span class="legend-icon icon-red" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg></span>
                 <div><div class="num" id="sufCountRed">0</div><div class="cap">Itens com pedido insuficiente</div></div>
+              </div>
+              <div class="legend-stat st-amber">
+                <span class="legend-icon icon-amber" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H8"/><path d="m14 6 6 6-6 6"/><path d="M4 4v16"/></svg></span>
+                <div><div class="num" id="sufCountAmber">0</div><div class="cap">Itens com pedido excedente</div></div>
               </div>
               <div class="legend-stat st-gray">
                 <span class="legend-icon icon-gray" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v.01"/><path d="M12 12v4"/></svg></span>
@@ -2192,7 +2196,12 @@ const items = [
         : `= quantidade necessária = <b>${v.programacao}</b>`],
       ['Programação sugerida', `ceil(programação ÷ qtd. por embalagem) × qtd. por embalagem = ceil(${v.programacao} ÷ ${v.fe}) × ${v.fe} = <b>${v.sugerida}</b>`],
       ['Excedente', `max(futuro − necessária, 0) = max(${v.futuro} − ${v.necessaria}, 0) = <b>${v.excedente}</b>`],
-      ['Suficiência do pedido', `programação sugerida ≥ quantidade necessária? ${v.sugerida} ≥ ${v.necessaria} → <b>${v.sugerida >= v.necessaria ? 'pedido suficiente' : 'pedido insuficiente'}</b>`],
+      ['Excedente do pedido', `max(programação sugerida − quantidade necessária, 0) = max(${v.sugerida} − ${v.necessaria}, 0) = <b>${v.pedidoExcedente}</b>`],
+      ['Suficiência do pedido', (()=>{
+        if(v.sugerida < v.necessaria) return `programação sugerida < quantidade necessária: ${v.sugerida} < ${v.necessaria} → <b>pedido insuficiente</b>`;
+        if(v.pedidoExcedente >= v.fe && v.pedidoExcedente > 0) return `excedente do pedido ≥ qtd. por embalagem: ${v.pedidoExcedente} ≥ ${v.fe} → <b>pedido excedente</b>`;
+        return `programação sugerida ≥ quantidade necessária, sem excedente relevante: ${v.sugerida} ≥ ${v.necessaria} → <b>pedido suficiente</b>`;
+      })()],
     ];
     content.innerHTML = linhas.map(([dt,dd])=> `<dt>${dt}</dt><dd>${dd}</dd>`).join('');
   }
@@ -2603,7 +2612,7 @@ mesesCobertura.toFixed(1) : '0';
     }
 
     let semCountRed = 0, semCountAmber = 0, semCountGreen = 0, semCountGray = 0;
-    let sufCountGreen = 0, sufCountRed = 0, sufCountGray = 0;
+    let sufCountGreen = 0, sufCountRed = 0, sufCountAmber = 0, sufCountGray = 0;
 
     selectedKeys.forEach(k=>{
 
@@ -2679,16 +2688,24 @@ receber, 0);
         // ---- Suficiência do pedido (indicador independente do semáforo de ruptura) ----
         // Compara a quantidade solicitada (programação sugerida, já ajustada à
         // embalagem) com a quantidade necessária calculada para o período futuro.
+        // pedidoExcedente mede o quanto a programação sugerida ultrapassa a
+        // quantidade necessária. Uma pequena sobra é esperada apenas pelo
+        // arredondamento à embalagem (fe); quando a sobra chega a uma
+        // embalagem inteira ou mais, o pedido é sinalizado como excedente.
+        const pedidoExcedente = Math.max(sugerida - necessaria, 0);
         let sufStatus, sufLabel;
         if(semNoData){
           sufStatus = 'gray'; sufLabel = 'Sem dados';
           sufCountGray++;
-        } else if(sugerida >= necessaria){
-          sufStatus = 'green'; sufLabel = 'Pedido suficiente';
-          sufCountGreen++;
-        } else {
+        } else if(sugerida < necessaria){
           sufStatus = 'red'; sufLabel = 'Pedido insuficiente';
           sufCountRed++;
+        } else if(pedidoExcedente >= fe && pedidoExcedente > 0){
+          sufStatus = 'amber'; sufLabel = 'Pedido excedente';
+          sufCountAmber++;
+        } else {
+          sufStatus = 'green'; sufLabel = 'Pedido suficiente';
+          sufCountGreen++;
         }
         const sufCell = semRow.querySelector('.sem-suficiencia');
         if(sufCell){
@@ -2699,7 +2716,7 @@ receber, 0);
       renderMemo(k, {
         consumo, estoque, reservado, vencimento, receber, margem, fe,
         diasAteEntrega, term: item ? item.term : 'AMB', mesesCobertura, aConsumir, futuro, seguranca,
-        necessaria, programacao, sugerida, excedente,
+        necessaria, programacao, sugerida, excedente, pedidoExcedente,
         manual: !!manualOverride[k]
       });
 
@@ -2710,6 +2727,7 @@ receber, 0);
     document.getElementById('semCountGray').textContent = semCountGray;
     document.getElementById('sufCountGreen').textContent = sufCountGreen;
     document.getElementById('sufCountRed').textContent = sufCountRed;
+    document.getElementById('sufCountAmber').textContent = sufCountAmber;
     document.getElementById('sufCountGray').textContent = sufCountGray;
 
     aplicarFiltroSemaforo();
@@ -2793,7 +2811,8 @@ window.print());
       'Cobertura (meses)','Cobertura (dias)',
       'A consumir até a entrega (un)','Estoque futuro (un)',
       'Estoque de segurança (un)','Quantidade necessária (un)',
-      'Programação sugerida (ajuste à embalagem) (un)','Quantidade excedente (un)'
+      'Programação sugerida (ajuste à embalagem) (un)','Quantidade excedente (un)',
+      'Quantidade excedente do pedido (un)'
     ];
 
     const linhas = [cabecalho];
@@ -2836,6 +2855,7 @@ window.print());
         getResult('sem-necessaria'),
         getResult('sem-sugerida'),
         getResult('sem-excedente'),
+        Math.max((parseFloat(getResult('sem-sugerida'))||0) - (parseFloat(getResult('sem-necessaria'))||0), 0),
       ]);
     });
 
