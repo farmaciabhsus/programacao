@@ -875,7 +875,7 @@ transparent 60%);
     width:100%;
     border-collapse:separate;
     border-spacing:0;
-    min-width:1680px;
+    min-width:2080px;
   }
   /* Colunas de cálculo intermediário: saem da tabela principal e passam a
   aparecer só dentro do painel "Memória de cálculo" (ƒx) de cada item, para
@@ -1280,6 +1280,12 @@ transparent 60%);
     #tabelaI thead th:nth-last-child(-n+2),
     #tabelaI tbody td:nth-last-child(-n+2){ display:none !important; }
 
+    /* As colunas de cálculo intermediário (.col-detail) ficam ocultas na
+       tela por padrão — visíveis só dentro da Memória de cálculo (ƒx) — mas
+       o PDF/impressão precisa exibir TODAS as colunas da tabela de
+       programação, já que ali não há como abrir a memória de cálculo. */
+    .col-detail{ display:table-cell !important; }
+
     /* Evita que uma linha da tabela seja partida entre duas páginas e
        garante que o cabeçalho se repita em cada página impressa. */
     thead{ display:table-header-group; }
@@ -1653,10 +1659,20 @@ embalagem do medicamento/produto no SIGAF. Confirme o valor correto para cada
 item — a programação sugerida será arredondada para múltiplos deste
 número.">i</span></div></th>
 
-            <th><div class="th-flex">Quantitativo de consumo estimado no mês (un)<span class="hint"
-tabindex="0" data-tip="Informe o consumo real mensal de cada
-medicamento/produto, com base na análise do CMM e do número de pacientes
-atendidos. Os valores devem ser os mesmos a serem informados no pedido do
+            <th><div class="th-flex">Consumo — mês 1 (un)<span class="hint"
+tabindex="0" data-tip="Informe o consumo real do mês mais antigo dos últimos 3
+meses (M-3). O sistema soma os 3 meses informados e calcula automaticamente o
+CMM (Consumo Médio Mensal), usado nas fórmulas de programação.">i</span></div></th>
+            <th><div class="th-flex">Consumo — mês 2 (un)<span class="hint"
+tabindex="0" data-tip="Informe o consumo real do mês intermediário dos
+últimos 3 meses (M-2).">i</span></div></th>
+            <th><div class="th-flex">Consumo — mês 3 (un)<span class="hint"
+tabindex="0" data-tip="Informe o consumo real do mês mais recente dos
+últimos 3 meses (M-1), imediatamente anterior ao mês de referência.">i</span></div></th>
+            <th><div class="th-flex">Consumo máximo (un)<span class="hint"
+tabindex="0" data-tip="Calculado automaticamente: o maior valor entre os 3
+meses de consumo informados. Não entra nas fórmulas de programação — é apenas
+replicado no Resumo do pedido (Etapa 4) como referência para o lançamento no
 SIGAF.">i</span></div></th>
             <th><div class="th-flex">Quantitativo em estoque disponível (un)<span class="hint"
 tabindex="0" data-tip="Informe a quantidade em estoque apta para uso e dentro do
@@ -1693,6 +1709,7 @@ Saúde.">i</span></div></th>
             <th class="col-detail"><div class="th-flex">Quantitativo a consumir até a entrega (un)<span class="hint" tabindex="0" data-tip="Consumo estimado mensal proporcional aos dias entre a Data de Análise e a Data Prevista de Entrega correspondente à categoria do item (Termolábil ou Termoestável). Todas as datas são obrigatórias; sem a Data Prevista de Entrega específica, este valor fica zerado.">i</span></div></th>
             <th class="col-detail"><div class="th-flex">quantitativo no estoque futuro (un)<span class="hint" tabindex="0" data-tip="Estoque disponível − a consumir até a entrega − reservado − vencimento próximo + a receber.">i</span></div></th>
             <th class="col-detail"><div class="th-flex">Quantitativo do estoque de segurança (un)<span class="hint" tabindex="0" data-tip="Consumo estimado × meses de cobertura × margem de segurança (%).">i</span></div></th>
+            <th><div class="th-flex">Quantitativo de consumo estimado no mês (un)<span class="hint" tabindex="0" data-tip="Calculado automaticamente como a média dos 3 meses de consumo informados (CMM = Consumo Médio Mensal = (mês 1 + mês 2 + mês 3) ÷ 3). Este valor — e não mais um campo aberto — é usado em todas as fórmulas de programação abaixo. Os valores dos 3 meses devem ser os mesmos a serem informados no pedido do SIGAF.">i</span></div></th>
             <th><div class="th-flex">Quantidade necessária (un)<span class="hint" tabindex="0" data-tip="(Consumo estimado × meses de cobertura) + estoque de segurança − estoque futuro.">i</span></div></th>
             <th><div class="th-flex">Quantitativo para a programação sugerida (ajuste à embalagem) (un)<span class="hint" tabindex="0" data-tip="Quantidade da programação já arredondada ao múltiplo da quantidade por embalagem.">i</span></div></th>
             <th><div class="th-flex">Quantidade excedente (un)<span class="hint" tabindex="0" data-tip="Calculado automaticamente: estoque futuro acima da quantidade necessária para o período. Indica possível excesso, com risco de vencimento.">i</span></div></th>
@@ -1702,11 +1719,11 @@ Saúde.">i</span></div></th>
         </thead>
         <tbody id="tbodyI">
           <tr id="emptyRowI" class="empty-row">
-            <td colspan="22">Nenhum item adicionado ainda. Use a busca acima
+            <td colspan="26">Nenhum item adicionado ainda. Use a busca acima
 para adicionar os medicamentos/produtos que serão programados.</td>
           </tr>
           <tr id="noMatchRowI" class="empty-row" style="display:none;">
-            <td colspan="22">Nenhum item encontrado para esta busca.</td>
+            <td colspan="26">Nenhum item encontrado para esta busca.</td>
           </tr>
         </tbody>
       </table>
@@ -1793,12 +1810,13 @@ situação adequada.<br>Cinza: item ainda sem dados preenchidos. Clique no ícon
               <th>Suficiência do pedido</th>
               <th>item(ns)</th>
               <th>Código SIGAF</th>
+              <th>Consumo máximo (un)</th>
               <th>Quantidade a Pedir</th>
             </tr>
           </thead>
           <tbody id="tbodyResumo">
             <tr id="emptyRowResumo" class="empty-row">
-              <td colspan="5">Nenhum item adicionado ainda. Adicione itens na
+              <td colspan="6">Nenhum item adicionado ainda. Adicione itens na
 tabela acima para vê-los aqui.</td>
             </tr>
           </tbody>
@@ -2157,6 +2175,9 @@ const items = [
   const manualOverride = {};
   // quantidade final sugerida (já ajustada à quantidade por embalagem) por item, usada no resumo
   const sugeridaByKey = {};
+  // consumo máximo entre os 3 últimos meses, por item — não entra nas fórmulas,
+  // apenas é replicado no Resumo do pedido (Etapa 4)
+  const consumoMaxByKey = {};
   // status de risco de desabastecimento e suficiência do pedido por item, usados no resumo
   const statusByKey = {};
   const suficienciaByKey = {};
@@ -2170,7 +2191,10 @@ const items = [
       <td class="name">${item.name}${item.term==='FRIO' ? ' <span class="term-badge" title="Item termolábil — usa a Data Prevista de Entrega Termolábil">❄ termolábil</span>' : ''}</td>
       <td class="code">${item.code}</td>
       <td><input type="number" min="1" value="${item.fe}" class="fe-input" data-key="${item.key}" data-col="fe"></td>
-      <td><input type="number" min="0" value="0" data-key="${item.key}" data-col="consumo"></td>
+      <td><input type="number" min="0" value="0" data-key="${item.key}" data-col="consumoM1"></td>
+      <td><input type="number" min="0" value="0" data-key="${item.key}" data-col="consumoM2"></td>
+      <td><input type="number" min="0" value="0" data-key="${item.key}" data-col="consumoM3"></td>
+      <td class="result sem-consumomax">0</td>
       <td><input type="number" min="0" value="0" data-key="${item.key}" data-col="estoque"></td>
       <td><input type="number" min="0" value="0" data-key="${item.key}" data-col="reservado"></td>
       <td><input type="number" min="0" value="0" data-key="${item.key}" data-col="vencimento"></td>
@@ -2185,6 +2209,7 @@ const items = [
       <td class="result sem-aconsumir col-detail">0</td>
       <td class="result sem-futuro col-detail">0</td>
       <td class="result sem-seguranca col-detail">0</td>
+      <td class="result sem-cmm">0</td>
       <td class="result sem-necessaria">0</td>
       <td class="result sem-sugerida">0</td>
       <td class="result sem-excedente">0</td>
@@ -2199,7 +2224,7 @@ const items = [
     memoTr.className = 'calc-memo-row';
     memoTr.dataset.memoRowKey = item.key;
     memoTr.style.display = 'none';
-    memoTr.innerHTML = `<td colspan="22"><div class="calc-memo" data-memo-content-key="${item.key}">
+    memoTr.innerHTML = `<td colspan="26"><div class="calc-memo" data-memo-content-key="${item.key}">
       <div class="memo-title">Memória de cálculo — ${item.name}</div>
       <dl></dl>
     </div></td>`;
@@ -2211,6 +2236,8 @@ const items = [
     const content = document.querySelector(`.calc-memo[data-memo-content-key="${k}"] dl`);
     if(!content) return;
     const linhas = [
+      ['Consumo médio mensal (CMM)', `(mês 1 + mês 2 + mês 3) ÷ 3 = (${v.consumoM1} + ${v.consumoM2} + ${v.consumoM3}) ÷ 3 = <b>${v.consumo}</b>`],
+      ['Consumo máximo', `max(mês 1, mês 2, mês 3) = max(${v.consumoM1}, ${v.consumoM2}, ${v.consumoM3}) = <b>${v.consumoMax}</b> (não entra nas fórmulas abaixo — apenas replicado no Resumo do pedido)`],
       ['A consumir até a entrega', `round(consumo ÷ 30 × dias até a entrega${v.term==='FRIO' ? ' — termolábil' : ' — termoestável'}) = round(${v.consumo} ÷ 30 × ${v.diasAteEntrega}) = <b>${v.aConsumir}</b>`],
       ['Estoque futuro', `estoque − a consumir − reservado − vencimento + a receber = ${v.estoque} − ${v.aConsumir} − ${v.reservado} − ${v.vencimento} + ${v.receber} = <b>${v.futuro}</b>`],
       ['Estoque de segurança', `consumo × meses de cobertura × margem = ${v.consumo} × ${v.mesesCobertura.toFixed(2)} × ${(v.margem/100).toFixed(2)} = <b>${v.seguranca}</b>`],
@@ -2640,7 +2667,16 @@ fmt(dF) : '—';
 
     selectedKeys.forEach(k=>{
 
-      const consumo = getVal(`input[data-key="${k}"][data-col="consumo"]`);
+      // CMM (Consumo Médio Mensal): calculado automaticamente a partir dos 3
+      // últimos meses de consumo informados pelo respondente — substitui o
+      // antigo campo aberto de "consumo estimado no mês". Consumo máximo é
+      // apenas informativo (maior dos 3 meses), não entra nas fórmulas abaixo.
+      const consumoM1 = getVal(`input[data-key="${k}"][data-col="consumoM1"]`);
+      const consumoM2 = getVal(`input[data-key="${k}"][data-col="consumoM2"]`);
+      const consumoM3 = getVal(`input[data-key="${k}"][data-col="consumoM3"]`);
+      const consumoMax = Math.max(consumoM1, consumoM2, consumoM3);
+      const consumo = Math.round((consumoM1 + consumoM2 + consumoM3) / 3);
+      consumoMaxByKey[k] = consumoMax;
       const estoque = getVal(`input[data-key="${k}"][data-col="estoque"]`);
       const reservado = getVal(`input[data-key="${k}"][data-col="reservado"]`);
       const vencimento = getVal(`input[data-key="${k}"][data-col="vencimento"]`);
@@ -2717,6 +2753,8 @@ receber, 0);
         setText(semRow.querySelector('.sem-aconsumir'), aConsumir);
         setText(semRow.querySelector('.sem-futuro'), futuro);
         setText(semRow.querySelector('.sem-seguranca'), seguranca);
+        setText(semRow.querySelector('.sem-consumomax'), consumoMax);
+        setText(semRow.querySelector('.sem-cmm'), consumo);
         setText(semRow.querySelector('.sem-necessaria'), necessaria);
         setText(semRow.querySelector('.sem-sugerida'), sugerida);
         setText(semRow.querySelector('.sem-excedente'), excedente);
@@ -2750,7 +2788,7 @@ receber, 0);
       }
 
       renderMemo(k, {
-        consumo, estoque, reservado, vencimento, receber, margem, fe,
+        consumo, consumoM1, consumoM2, consumoM3, consumoMax, estoque, reservado, vencimento, receber, margem, fe,
         diasAteEntrega, term: item ? item.term : 'AMB', mesesCobertura, aConsumir, futuro, seguranca,
         necessaria, programacao, sugerida, excedente, pedidoExcedente,
         manual: !!manualOverride[k]
@@ -2777,7 +2815,7 @@ receber, 0);
     const chavesComQtd = selectedKeys.filter(k=> (sugeridaByKey[k] || 0) >= 1);
     if(chavesComQtd.length===0){
       resumoBody.innerHTML = `<tr id="emptyRowResumo" class="empty-row">
-        <td colspan="5">Nenhum item com quantidade sugerida maior ou igual a 1.
+        <td colspan="6">Nenhum item com quantidade sugerida maior ou igual a 1.
 Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
       resumoContagem.textContent = '';
       return;
@@ -2787,6 +2825,7 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
     resumoBody.innerHTML = ordenado.map(k=>{
       const item = itemsByKey[k];
       const qtd = sugeridaByKey[k] || 0;
+      const consumoMax = consumoMaxByKey[k] || 0;
       const st = statusByKey[k] || { status:'gray', label:'Sem dados' };
       const suf = suficienciaByKey[k] || { status:'gray', label:'Sem dados' };
       return `<tr>
@@ -2794,6 +2833,7 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
         <td><span class="status-badge ${suf.status}"><span class="dot"></span>${suf.label}</span></td>
         <td class="name">${item.name}</td>
         <td class="code">${item.code ? item.code : '—'}</td>
+        <td class="qtd">${consumoMax}</td>
         <td class="qtd">${qtd}</td>
       </tr>`;
     }).join('');
@@ -2857,12 +2897,13 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
 
     const cabecalho = [
       'Status','Suficiência do pedido','Item','Categoria térmica','Código SIGAF','Quantidade por embalagem (un)',
-      'Consumo estimado no mês (un)','Estoque disponível (un)',
+      'Consumo mês 1 (un)','Consumo mês 2 (un)','Consumo mês 3 (un)','Consumo máximo (un)',
+      'Estoque disponível (un)',
       'Reservado para outros programas (un)','Vencimento próximo (un)',
       'A receber (un)','Margem de segurança (%)','Programação de ajuste (un)',
       'Data provável de ruptura mais próxima','Cobertura (dias)',
       'A consumir até a entrega (un)','Estoque futuro (un)',
-      'Estoque de segurança (un)','Quantidade necessária (un)',
+      'Estoque de segurança (un)','Consumo estimado no mês - CMM (un)','Quantidade necessária (un)',
       'Programação sugerida (ajuste à embalagem) (un)','Quantidade excedente (un)',
       'Quantidade excedente do pedido (un)'
     ];
@@ -2892,7 +2933,10 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
         item && item.term==='FRIO' ? 'Termolábil' : 'Termoestável',
         item ? item.code : '',
         getVal('fe'),
-        getVal('consumo'),
+        getVal('consumoM1'),
+        getVal('consumoM2'),
+        getVal('consumoM3'),
+        getResult('sem-consumomax'),
         getVal('estoque'),
         getVal('reservado'),
         getVal('vencimento'),
@@ -2904,6 +2948,7 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
         getResult('sem-aconsumir'),
         getResult('sem-futuro'),
         getResult('sem-seguranca'),
+        getResult('sem-cmm'),
         getResult('sem-necessaria'),
         getResult('sem-sugerida'),
         getResult('sem-excedente'),
@@ -3002,7 +3047,9 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
     const itemsState = selectedKeys.map(k=>({
       key: k,
       fe: campo(k,'fe'),
-      consumo: campo(k,'consumo'),
+      consumoM1: campo(k,'consumoM1'),
+      consumoM2: campo(k,'consumoM2'),
+      consumoM3: campo(k,'consumoM3'),
       estoque: campo(k,'estoque'),
       reservado: campo(k,'reservado'),
       vencimento: campo(k,'vencimento'),
@@ -3048,11 +3095,18 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
     (state.items || []).forEach(it=>{
       if(!it || !itemsByKey[it.key]) return;
       addItem(it.key);
-      ['fe','consumo','estoque','reservado','vencimento','receber','margem','programacao'].forEach(col=>{
+      ['fe','consumoM1','consumoM2','consumoM3','estoque','reservado','vencimento','receber','margem','programacao'].forEach(col=>{
         if(it[col] === undefined) return;
         const inp = document.querySelector(`input[data-key="${it.key}"][data-col="${col}"]`);
         if(inp) inp.value = it[col];
       });
+      // Compatibilidade com rascunhos salvos antes da separação do consumo em
+      // 3 meses: usa o valor único antigo como referência para o mês 3 (mais
+      // recente), já que era o único dado disponível para a CMM na época.
+      if(it.consumo !== undefined && it.consumoM1 === undefined && it.consumoM2 === undefined && it.consumoM3 === undefined){
+        const inp3 = document.querySelector(`input[data-key="${it.key}"][data-col="consumoM3"]`);
+        if(inp3) inp3.value = it.consumo;
+      }
       manualOverride[it.key] = !!it.manual;
       const badge = document.querySelector(`.override-badge[data-badge-key="${it.key}"]`);
       if(badge) badge.style.display = it.manual ? 'inline-flex' : 'none';
