@@ -1217,6 +1217,24 @@ transparent 60%);
     .picker-overlay{ display:none !important; }
     .card{ box-shadow:none; border:1px solid #ccc; }
 
+    /* .card usa overflow:hidden na tela só para arredondar as bordas com o
+       conteúdo interno (cabeçalho, tabela com scroll). Em impressão, como o
+       conteúdo passa a ter altura livre (tabelas grandes ocupando várias
+       páginas), manter overflow:hidden arriscava cortar linhas que
+       ultrapassassem a altura da página. Liberamos aqui para garantir que
+       nada seja cortado. */
+    .card{ overflow:visible !important; }
+
+    /* A Etapa 4 (Resumo do pedido) tinha page-break-inside:avoid fixo no
+       card inteiro. Com poucos itens isso é só um empurrão estético para a
+       página seguinte, mas com muitos itens o card pode ficar mais alto do
+       que uma página inteira — e "avoid" não tem como ser respeitado nesse
+       caso, arriscando conteúdo cortado na borda da página. Por isso, na
+       impressão, permitimos que o card quebre entre páginas normalmente; a
+       regra abaixo (tbody tr{page-break-inside:avoid}) já garante que
+       nenhuma linha da tabela seja partida ao meio.  */
+    .resumo-card{ page-break-inside:auto !important; }
+
     /* Corrige o corte de conteúdo: o wrapper da tabela (Parte I) tinha
        overflow-x/overflow-y com rolagem, então só o trecho visível na tela
        era impresso. Aqui liberamos a rolagem para que TODAS as colunas e
@@ -1286,6 +1304,16 @@ transparent 60%);
        programação, já que ali não há como abrir a memória de cálculo. */
     .col-detail{ display:table-cell !important; }
 
+    /* Na tela, o item(ns) do Resumo do pedido (Etapa 4) ganha uma largura
+       mínima fixa para não ficar espremido. No PDF, como o layout de
+       colunas já se ajusta automaticamente (table-layout:auto) e o nome do
+       medicamento naturalmente é o texto mais longo da linha, deixamos essa
+       largura livre — assim ela recebe bastante espaço sem arriscar
+       empurrar outras colunas para fora da página impressa. */
+    table.tabela-resumo td.name, table.tabela-resumo th:nth-child(3){
+      min-width:0 !important;
+    }
+
     /* Evita que uma linha da tabela seja partida entre duas páginas e
        garante que o cabeçalho se repita em cada página impressa. */
     thead{ display:table-header-group; }
@@ -1338,6 +1366,7 @@ transparent 60%);
     color:var(--ink);
     white-space:normal;
     line-height:1.35;
+    min-width:340px;
   }
   table.tabela-resumo td.code{
     font-family:var(--mono);
@@ -1650,8 +1679,8 @@ dessa categoria na tabela.</p>
       <table id="tabelaI">
         <thead>
           <tr>
-            <th>Status</th>
-            <th><div class="th-flex">Suficiência do pedido<span class="hint" tabindex="0" data-tip="Indicador independente do semáforo de ruptura: fica verde quando a quantidade solicitada (programação sugerida) cobre a necessidade calculada do período futuro sem sobra relevante; fica âmbar quando o pedido excede a quantidade necessária em uma embalagem inteira ou mais; fica vermelho quando fica abaixo dela.">i</span></div></th>
+            <th>Suficiência<br>estoque</th>
+            <th><div class="th-flex">Suficiência<br>pedido<span class="hint" tabindex="0" data-tip="Indicador independente do semáforo de ruptura: fica verde quando a quantidade solicitada (programação sugerida) cobre a necessidade calculada do período futuro sem sobra relevante; fica âmbar quando o pedido excede a quantidade necessária em uma embalagem inteira ou mais; fica vermelho quando fica abaixo dela.">i</span></div></th>
             <th style="min-width:220px;">item(ns)</th>
             <th>Código SIGAF</th>
             <th><div class="th-flex">Quantidade por embalagem (un)<span class="hint" tabindex="0" data-tip="Quantidade por embalagem: quantidade de unidades farmacêuticas contida em cada
@@ -1806,9 +1835,9 @@ situação adequada.<br>Cinza: item ainda sem dados preenchidos. Clique no ícon
         <table id="tabelaResumo" class="tabela-resumo">
           <thead>
             <tr>
-              <th>Status</th>
-              <th>Suficiência do pedido</th>
-              <th>item(ns)</th>
+              <th>Suficiência<br>estoque</th>
+              <th>Suficiência<br>pedido</th>
+              <th style="min-width:340px;">item(ns)</th>
               <th>Código SIGAF</th>
               <th>Consumo máximo (un)</th>
               <th>Quantidade a Pedir</th>
@@ -2896,7 +2925,7 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
     }
 
     const cabecalho = [
-      'Status','Suficiência do pedido','Item','Categoria térmica','Código SIGAF','Quantidade por embalagem (un)',
+      'Suficiência estoque','Suficiência pedido','Item','Categoria térmica','Código SIGAF','Quantidade por embalagem (un)',
       'Consumo — antepenúltimo mês (un)','Consumo — penúltimo mês (un)','Consumo — último mês (un)',
       'Estoque disponível (un)',
       'Reservado para outros programas (un)','Vencimento próximo (un)',
@@ -3084,7 +3113,11 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
     if(state.estabResponsavel !== undefined) estabResponsavel.value = state.estabResponsavel;
     if(state.estabEmail !== undefined) estabEmail.value = state.estabEmail;
     if(state.estabTelefone !== undefined) estabTelefone.value = state.estabTelefone;
-    if(state.dataAnalise !== undefined) dataAnalise.value = state.dataAnalise;
+    // A Data de Análise do Estoque nunca é restaurada do rascunho salvo —
+    // ela deve refletir sempre a data atual do sistema no momento em que a
+    // página é aberta, mesmo que o rascunho tenha sido salvo em outro dia.
+    // As demais datas continuam vindo do que foi salvo.
+    dataAnalise.value = hojeISO();
     if(state.dataInicio !== undefined) dataInicio.value = state.dataInicio;
     if(state.dataFim !== undefined) dataFim.value = state.dataFim;
     if(state.dataEntregaFrio !== undefined) dataEntregaFrio.value = state.dataEntregaFrio;
