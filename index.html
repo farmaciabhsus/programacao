@@ -2673,6 +2673,17 @@ receber, 0);
 
       // ---- Semáforo de status ----
       const excedente = Math.max(futuro - necessaria, 0);
+      // pedidoExcedente precisa ser calculada aqui fora (e não dentro do
+      // bloco "if(semRow)" logo abaixo), porque é usada mais adiante na
+      // chamada de renderMemo() — que roda mesmo quando semRow existe.
+      // Antes, por estar declarada dentro do bloco if, a variável saía de
+      // escopo antes de chegar em renderMemo(), lançando
+      // "ReferenceError: pedidoExcedente is not defined" a cada
+      // recálculo. Esse erro interrompia recalc() no meio do caminho,
+      // impedindo que renderResumoPedido() rodasse — por isso a Etapa 4
+      // (Resumo do pedido) ficava sempre vazia, mesmo com itens
+      // corretamente calculados na tabela principal.
+      const pedidoExcedente = Math.max(sugerida - necessaria, 0);
       const semRow = tbody.querySelector(`tr[data-key="${k}"]`);
       if(semRow){
         const semNoData = consumo===0 && estoque===0 && programacao===0;
@@ -2717,7 +2728,6 @@ receber, 0);
         // quantidade necessária. Uma pequena sobra é esperada apenas pelo
         // arredondamento à embalagem (fe); quando a sobra chega a uma
         // embalagem inteira ou mais, o pedido é sinalizado como excedente.
-        const pedidoExcedente = Math.max(sugerida - necessaria, 0);
         let sufStatus, sufLabel;
         if(semNoData){
           sufStatus = 'gray'; sufLabel = 'Sem dados';
