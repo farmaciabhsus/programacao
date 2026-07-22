@@ -586,6 +586,12 @@ transparent 60%);
     flex-wrap:wrap;
     gap:10px 26px;
   }
+  .stat-group-note{
+    margin:12px 0 0;
+    font-size:11px;
+    line-height:1.4;
+    color:var(--ink-soft);
+  }
   .stat-mini{ min-width:90px; }
   .stat-mini .num{
     font-family:var(--serif);
@@ -1220,6 +1226,16 @@ transparent 60%);
       overflow:visible !important;
     }
 
+    /* A memória de cálculo (ƒx) fica oculta por padrão (display:none) até o
+       usuário clicar no botão. Na tela isso é intencional, mas no PDF
+       impresso ninguém consegue clicar em nada — por isso, ao imprimir,
+       forçamos TODAS as linhas de memória de cálculo a aparecer, mesmo que
+       nunca tenham sido abertas manualmente. */
+    tr.calc-memo-row{
+      display:table-row !important;
+    }
+    .btn-memo{ display:none !important; }
+
     /* A tabela principal tinha min-width:2200px (pensada para tela com
        rolagem horizontal). Em impressão isso faz colunas ficarem fora da
        página. Deixamos a tabela se ajustar à largura do papel (paisagem)
@@ -1560,17 +1576,20 @@ campo.">i</span> para ver a orientação oficial.</p>
           </div>
         </div>
         <div class="stat-group">
-          <p class="stat-group-title">Dias até a entrega, por categoria térmica</p>
+          <p class="stat-group-title">Dias até a entrega prevista, por categoria térmica</p>
           <div class="stat-group-items">
             <div class="stat-mini accent-frio">
               <div class="num" id="statDiasAteEntregaFrio">0</div>
-              <div class="cap"><span class="term-dot dot-frio"></span>Termolábil</div>
+              <div class="cap"><span class="term-dot dot-frio"></span>Termolábil (dias)</div>
             </div>
             <div class="stat-mini accent-amb">
               <div class="num" id="statDiasAteEntregaAmb">0</div>
-              <div class="cap"><span class="term-dot dot-amb"></span>Termoestável</div>
+              <div class="cap"><span class="term-dot dot-amb"></span>Termoestável (dias)</div>
             </div>
           </div>
+          <p class="stat-group-note">Dias entre a Data de Análise do Estoque e a
+Data Prevista de Entrega de cada categoria — não é a quantidade de itens
+dessa categoria na tabela.</p>
         </div>
       </div>
     </div>
@@ -2795,8 +2814,20 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
     recalc();
     scheduleAutosave();
   });
-  document.getElementById('btnPrint').addEventListener('click', ()=>
-window.print());
+  document.getElementById('btnPrint').addEventListener('click', ()=>{
+    // Antes de imprimir/exportar, cancela o debounce do autosave e salva
+    // imediatamente o estado atual, e força um recálculo síncrono. Sem
+    // isso, se a página fosse recarregada logo após uma digitação recente
+    // (antes do autosave disparar), o rascunho restaurado do
+    // localStorage podia estar desatualizado — sobrescrevendo com zeros
+    // campos que o usuário acabou de preencher (é o que causava itens
+    // aparecendo como "Sem dados"/zerados e o Resumo da Etapa 4 vazio
+    // mesmo com itens preenchidos na tabela).
+    clearTimeout(autosaveTimer);
+    doSave();
+    recalc();
+    window.print();
+  });
 
   // ---- Exportação em CSV ----
   function escapeCSV(valor){
