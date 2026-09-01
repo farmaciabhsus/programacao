@@ -822,6 +822,69 @@ transparent 60%);
     display:flex;
     gap:16px;
   }
+  /* ---- Cadastro de novo item (não está na lista oficial) ---- */
+  .picker-add-new{
+    padding:0 22px 14px;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .picker-add-new .link-btn{
+    padding:10px 0 4px;
+  }
+  .picker-add-form{
+    background:var(--surface);
+    border:1.5px dashed var(--border);
+    border-radius:var(--radius-md);
+    padding:14px 16px 16px;
+    margin-top:2px;
+  }
+  .picker-add-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:12px;
+  }
+  .picker-add-field{ display:flex; flex-direction:column; gap:5px; }
+  .picker-add-field-lg{ grid-column:1 / -1; }
+  .picker-add-field label{
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--ink);
+  }
+  .picker-add-field input, .picker-add-field select{
+    height:38px;
+    font-family:var(--sans);
+    font-size:13px;
+    padding:0 11px;
+    border:1.5px solid var(--border);
+    border-radius:var(--radius-sm);
+    background:var(--white);
+    color:var(--ink);
+  }
+  .picker-add-field input:focus, .picker-add-field select:focus{
+    outline:none;
+    border-color:var(--sage-dark);
+    box-shadow:0 0 0 3px rgba(79,169,138,0.30);
+  }
+  .picker-add-error{
+    display:none;
+    margin-top:10px;
+    padding:9px 12px;
+    background:#FBEAE7;
+    border:1px solid rgba(179,38,30,0.28);
+    border-radius:var(--radius-sm);
+    color:#8C1F19;
+    font-size:12px;
+    line-height:1.5;
+  }
+  .picker-add-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:12px;
+  }
+  .picker-add-actions button{
+    padding:9px 16px;
+    font-size:12.5px;
+  }
   .picker-list{
     flex:1;
     overflow-y:auto;
@@ -1642,6 +1705,37 @@ campo.">i</span> em qualquer coluna para ver a orientação oficial de preenchim
             <button type="button" class="link-btn" id="btnDesmarcarVisiveis">Desmarcar todos os visíveis</button>
           </div>
         </div>
+        <div class="picker-add-new" id="pickerAddNew">
+          <button type="button" class="link-btn" id="btnAbrirNovoItem">+ Cadastrar novo item (não está na lista)</button>
+          <div class="picker-add-form" id="pickerAddForm" style="display:none;">
+            <div class="picker-add-grid">
+              <div class="picker-add-field picker-add-field-lg">
+                <label for="novoItemNome">Nome do medicamento/produto<span class="required-mark">*</span></label>
+                <input type="text" id="novoItemNome" placeholder="Nome completo do item" autocomplete="off">
+              </div>
+              <div class="picker-add-field">
+                <label for="novoItemCodigo">Código SIGAF</label>
+                <input type="text" id="novoItemCodigo" placeholder="Opcional" autocomplete="off">
+              </div>
+              <div class="picker-add-field">
+                <label for="novoItemFe">Qtd. por embalagem (un)</label>
+                <input type="number" id="novoItemFe" min="1" value="1">
+              </div>
+              <div class="picker-add-field">
+                <label for="novoItemTerm">Categoria térmica</label>
+                <select id="novoItemTerm">
+                  <option value="AMB">Termoestável</option>
+                  <option value="FRIO">Termolábil</option>
+                </select>
+              </div>
+            </div>
+            <div class="picker-add-error" id="pickerAddError"></div>
+            <div class="picker-add-actions">
+              <button type="button" class="ghost" id="btnCancelarNovoItem">Cancelar</button>
+              <button type="button" class="primary" id="btnSalvarNovoItem">Adicionar item à lista</button>
+            </div>
+          </div>
+        </div>
         <div class="picker-list" id="pickerList"></div>
         <div class="picker-footer">
           <span class="count" id="pickerContagem">Nenhum item adicionado</span>
@@ -2256,6 +2350,55 @@ const items = [
   const itemsByKey = {};
   items.forEach(i=> itemsByKey[i.key] = i);
 
+  // ---- Itens cadastrados manualmente pelo usuário (não fazem parte da
+  // lista oficial pré-carregada) — persistidos junto do rascunho/backup ----
+  let nextCustomId = 1;
+  const customItemKeys = [];
+
+  function normalizarNome(nome){
+    return (nome || '')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // remove acentos
+      .trim()
+      .replace(/\s+/g,' ')
+      .toLowerCase();
+  }
+
+  function nomeJaExiste(nome){
+    const alvo = normalizarNome(nome);
+    if(!alvo) return false;
+    return items.some(i=> normalizarNome(i.name) === alvo);
+  }
+
+  // Cria e registra um novo item customizado. Retorna o item criado, ou
+  // null se a validação falhar (o motivo é escrito em errorOut, se
+  // fornecido, como { message }).
+  function criarItemCustom({name, code, fe, term}, errorOut){
+    const nomeLimpo = (name || '').trim().replace(/\s+/g,' ');
+    if(!nomeLimpo || nomeLimpo.length < 3){
+      if(errorOut) errorOut.message = 'Informe o nome completo do medicamento/produto (mínimo 3 caracteres).';
+      return null;
+    }
+    if(nomeJaExiste(nomeLimpo)){
+      if(errorOut) errorOut.message = 'Este item já existe na lista (nome igual ou muito semelhante a um item já cadastrado). Utilize a busca para localizá-lo.';
+      return null;
+    }
+    let feNum = parseInt(fe, 10);
+    if(!Number.isFinite(feNum) || feNum < 1) feNum = 1;
+    const termNorm = term === 'FRIO' ? 'FRIO' : 'AMB';
+    const codigoLimpo = (code || '').trim();
+
+    let key;
+    do{
+      key = 'custom_' + (nextCustomId++);
+    } while(itemsByKey[key]);
+
+    const novoItem = { name: nomeLimpo, code: codigoLimpo, fe: feNum, key, term: termNorm, custom: true };
+    items.push(novoItem);
+    itemsByKey[key] = novoItem;
+    customItemKeys.push(key);
+    return novoItem;
+  }
+
   // itens que o farmacêutico escolheu programar (ordem de inclusão)
   let selectedKeys = [];
   // track manual overrides of the "programacao" (ajuste MS) field per item
@@ -2282,7 +2425,7 @@ const items = [
       <td class="sem-status"><span class="status-badge gray"><span class="dot"></span>Sem dados</span></td>
       <td class="sem-suficiencia"><span class="status-badge gray"><span class="dot"></span>Sem dados</span></td>
       <td class="falta-cell" style="text-align:center;"><input type="checkbox" class="chk-ruptura" data-key="${item.key}" data-col="ruptura" title="Marcar quando o item está com estoque zerado (ruptura), sem consumo recente para calcular automaticamente"></td>
-      <td class="name">${item.name}${item.term==='FRIO' ? ' <span class="term-badge" title="Item termolábil — usa a Data Prevista de Entrega Termolábil">❄ termolábil</span>' : ''}</td>
+      <td class="name">${item.name}${item.term==='FRIO' ? ' <span class="term-badge" title="Item termolábil — usa a Data Prevista de Entrega Termolábil">❄ termolábil</span>' : ''}${item.custom ? ' <span class="term-badge" style="background:#EEF1E6;color:var(--ink-soft);border-color:var(--border);" title="Item cadastrado manualmente pelo usuário, fora da lista oficial pré-carregada">＋ cadastrado manualmente</span>' : ''}</td>
       <td class="code">${item.code}</td>
       <td><input type="number" min="1" value="${item.fe}" class="fe-input" data-key="${item.key}" data-col="fe"></td>
       <td><input type="number" min="0" value="0" data-key="${item.key}" data-col="consumoM1"></td>
@@ -2424,8 +2567,92 @@ const items = [
   const btnMarcarVisiveis = document.getElementById('btnMarcarVisiveis');
   const btnDesmarcarVisiveis = document.getElementById('btnDesmarcarVisiveis');
 
-  // ordem alfabética estável para exibição na lista de seleção
-  const itemsOrdenados = [...items].sort((a,b)=> a.name.localeCompare(b.name,'pt-BR'));
+  // ---- Cadastro de novo item (não está na lista oficial) ----
+  const btnAbrirNovoItem = document.getElementById('btnAbrirNovoItem');
+  const pickerAddForm = document.getElementById('pickerAddForm');
+  const novoItemNome = document.getElementById('novoItemNome');
+  const novoItemCodigo = document.getElementById('novoItemCodigo');
+  const novoItemFe = document.getElementById('novoItemFe');
+  const novoItemTerm = document.getElementById('novoItemTerm');
+  const pickerAddError = document.getElementById('pickerAddError');
+  const btnCancelarNovoItem = document.getElementById('btnCancelarNovoItem');
+  const btnSalvarNovoItem = document.getElementById('btnSalvarNovoItem');
+
+  function limparFormNovoItem(){
+    novoItemNome.value = '';
+    novoItemCodigo.value = '';
+    novoItemFe.value = '1';
+    novoItemTerm.value = 'AMB';
+    pickerAddError.style.display = 'none';
+    pickerAddError.textContent = '';
+    novoItemNome.classList.remove('invalid-input');
+  }
+
+  function abrirFormNovoItem(){
+    pickerAddForm.style.display = 'block';
+    btnAbrirNovoItem.style.display = 'none';
+    novoItemNome.focus();
+  }
+  function fecharFormNovoItem(){
+    pickerAddForm.style.display = 'none';
+    btnAbrirNovoItem.style.display = 'inline-block';
+    limparFormNovoItem();
+  }
+
+  btnAbrirNovoItem.addEventListener('click', abrirFormNovoItem);
+  btnCancelarNovoItem.addEventListener('click', fecharFormNovoItem);
+
+  function salvarNovoItem(){
+    const erro = {};
+    const novo = criarItemCustom({
+      name: novoItemNome.value,
+      code: novoItemCodigo.value,
+      fe: novoItemFe.value,
+      term: novoItemTerm.value
+    }, erro);
+    if(!novo){
+      pickerAddError.textContent = erro.message || 'Não foi possível adicionar este item.';
+      pickerAddError.style.display = 'block';
+      novoItemNome.focus();
+      return;
+    }
+    // item novo entra automaticamente selecionado/adicionado à programação
+    addItem(novo.key);
+    fecharFormNovoItem();
+    renderPickerList();
+    updatePickerContagem();
+    scheduleAutosave();
+    // realça brevemente o item recém-criado na lista, para o usuário confirmar
+    const linha = pickerList.querySelector(`input[data-key="${novo.key}"]`);
+    if(linha){
+      const label = linha.closest('.picker-item');
+      if(label){
+        label.scrollIntoView({block:'nearest'});
+        label.style.transition = 'background .3s ease';
+        label.style.background = '#EAF1E1';
+        setTimeout(()=>{ label.style.background = ''; }, 900);
+      }
+    }
+  }
+
+  btnSalvarNovoItem.addEventListener('click', salvarNovoItem);
+  [novoItemNome, novoItemCodigo, novoItemFe].forEach(inp=>{
+    inp.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter'){ e.preventDefault(); salvarNovoItem(); }
+    });
+  });
+  novoItemNome.addEventListener('input', ()=>{
+    if(pickerAddError.style.display !== 'none'){
+      pickerAddError.style.display = 'none';
+      pickerAddError.textContent = '';
+    }
+  });
+
+  // ordem alfabética estável para exibição na lista de seleção — recalculada
+  // sempre que um novo item customizado é cadastrado
+  function itemsOrdenadosAtual(){
+    return [...items].sort((a,b)=> a.name.localeCompare(b.name,'pt-BR'));
+  }
 
   function updatePickerContagem(){
     pickerContagem.textContent = selectedKeys.length
@@ -2435,9 +2662,10 @@ const items = [
 
   function renderPickerList(){
     const t = pickerFiltro.value.trim().toLowerCase();
+    const base = itemsOrdenadosAtual();
     const matches = t
-      ? itemsOrdenados.filter(i=> i.name.toLowerCase().includes(t) || i.code.includes(t))
-      : itemsOrdenados;
+      ? base.filter(i=> i.name.toLowerCase().includes(t) || i.code.includes(t))
+      : base;
     if(!matches.length){
       pickerList.innerHTML = `<div class="picker-empty">Nenhum medicamento/produto encontrado</div>`;
       return;
@@ -2447,7 +2675,7 @@ const items = [
       return `<label class="picker-item">
         <input type="checkbox" data-key="${i.key}" ${marcado ? 'checked' : ''}>
         <span class="picker-item-text">
-          <span class="p-name">${i.name}</span>
+          <span class="p-name">${i.name}${i.custom ? ' <span class="term-badge" style="background:#EEF1E6;color:var(--ink-soft);border-color:var(--border);">cadastrado</span>' : ''}</span>
           <span class="p-code">${i.code ? 'SIGAF '+i.code : 's/ código'}</span>
         </span>
       </label>`;
@@ -2456,6 +2684,7 @@ const items = [
 
   function abrirPicker(){
     pickerFiltro.value = '';
+    fecharFormNovoItem();
     renderPickerList();
     updatePickerContagem();
     pickerOverlay.classList.add('open');
@@ -2464,6 +2693,7 @@ const items = [
 
   function fecharPicker(){
     pickerOverlay.classList.remove('open');
+    fecharFormNovoItem();
   }
 
   btnAbrirSelecao.addEventListener('click', abrirPicker);
@@ -3115,8 +3345,9 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
   // ---- Exportação / Importação de backup completo (.json) ----
   // O backup usa exatamente a mesma estrutura de estado do salvamento
   // automático (collectState/applyState), então importar um backup restaura
-  // 100% do que foi preenchido: dados do estabelecimento, datas, filtro e
-  // todos os itens adicionados com seus valores e overrides manuais.
+  // 100% do que foi preenchido: dados do estabelecimento, datas, filtro,
+  // itens cadastrados manualmente pelo usuário e todos os itens adicionados
+  // com seus valores e overrides manuais.
   function nomeArquivoBackup(){
     const d = new Date();
     const pad = n => String(n).padStart(2,'0');
@@ -3273,6 +3504,14 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
       programacao: campo(k,'programacao'),
       manual: !!manualOverride[k]
     }));
+    // Itens cadastrados manualmente pelo usuário (fora da lista oficial),
+    // salvos separadamente para que possam ser recriados ao restaurar um
+    // rascunho ou importar um backup, mesmo que não estejam mais
+    // selecionados na tabela no momento do salvamento.
+    const customItemsState = customItemKeys
+      .map(k=> itemsByKey[k])
+      .filter(Boolean)
+      .map(i=> ({ key:i.key, name:i.name, code:i.code, fe:i.fe, term:i.term }));
     return {
       v: 1,
       savedAt: Date.now(),
@@ -3287,6 +3526,7 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
       dataEntregaFrio: dataEntregaFrio.value,
       dataEntregaAmb: dataEntregaAmb.value,
       filtro: filtroSemaforo.value,
+      customItems: customItemsState,
       items: itemsState
     };
   }
@@ -3311,6 +3551,26 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
     // Compatibilidade com rascunhos salvos antes da separação por categoria
     // térmica: usa o valor único antigo como referência para Termoestável.
     else if(state.dataEntrega !== undefined) dataEntregaAmb.value = state.dataEntrega;
+
+    // Recria primeiro os itens cadastrados manualmente pelo usuário (fora
+    // da lista oficial), para que eles já existam em itemsByKey antes de
+    // (state.items || []) tentar adicioná-los à tabela logo abaixo. Itens
+    // com nome duplicado (já existente na lista oficial ou já recriado
+    // nesta mesma restauração) são simplesmente ignorados — evita duplicar
+    // o mesmo item a cada importação/restauração do mesmo backup.
+    (state.customItems || []).forEach(ci=>{
+      if(!ci || !ci.name) return;
+      if(itemsByKey[ci.key]) return; // já existe (ex.: mesma sessão)
+      if(nomeJaExiste(ci.name)) return; // duplicado por nome
+      const novoItem = { name: (ci.name||'').trim(), code:(ci.code||'').trim(), fe: Math.max(parseInt(ci.fe,10)||1,1), key: ci.key, term: ci.term==='FRIO' ? 'FRIO' : 'AMB', custom:true };
+      items.push(novoItem);
+      itemsByKey[novoItem.key] = novoItem;
+      customItemKeys.push(novoItem.key);
+      // mantém o contador de novos IDs à frente de qualquer chave importada
+      const m = /^custom_(\d+)$/.exec(novoItem.key);
+      if(m){ nextCustomId = Math.max(nextCustomId, parseInt(m[1],10)+1); }
+    });
+
     (state.items || []).forEach(it=>{
       if(!it || !itemsByKey[it.key]) return;
       addItem(it.key);
