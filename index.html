@@ -1021,6 +1021,31 @@ transparent 60%);
     vertical-align:middle;
   }
   tbody tr:hover td{ background:#FBFCF9; }
+
+  /* ---------- Coluna do item congelada (Etapa 2) ----------
+     Como o "congelar painéis" do Excel: ao rolar a tabela para a direita,
+     a coluna com o nome do medicamento/produto gruda na borda esquerda da
+     área de rolagem e continua visível. O fundo precisa ser opaco para que
+     as colunas que passam por baixo não apareçam através dela. */
+  #tabelaI thead th{ z-index:2; }
+  #tabelaI thead th.col-nome{
+    position:sticky;
+    left:0;
+    top:0;
+    z-index:4;
+    box-shadow:inset -1px 0 0 var(--border), 4px 0 6px -4px rgba(0,0,0,0.18);
+  }
+  #tabelaI thead th.col-nome:has(.hint:hover), #tabelaI thead th.col-nome:has(.hint:focus){ z-index:50; }
+  #tbodyI tr[data-key] td.name{
+    position:sticky;
+    left:0;
+    z-index:1;
+    background:var(--white);
+    box-shadow:inset -1px 0 0 var(--border), 4px 0 6px -4px rgba(0,0,0,0.18);
+  }
+  #tbodyI tr.row-red td.name{ background:linear-gradient(rgba(179,38,30,0.035),rgba(179,38,30,0.035)), var(--white); }
+  #tbodyI tr.row-amber td.name{ background:linear-gradient(rgba(185,133,46,0.05),rgba(185,133,46,0.05)), var(--white); }
+  #tbodyI tr[data-key]:hover td.name{ background:#FBFCF9; }
   tbody td.name{
     font-weight:600;
     color:var(--ink);
@@ -1390,6 +1415,10 @@ transparent 60%);
     thead th .th-flex{ max-width:none; }
     tbody td{ font-size:7.5px; padding:3px 3px; }
     tbody td.name{ max-width:none; }
+    #tabelaI thead th.col-nome, #tbodyI tr[data-key] td.name{
+      position:static !important;
+      box-shadow:none !important;
+    }
     td input{
       width:100% !important;
       min-width:0;
@@ -1759,7 +1788,7 @@ campo.">i</span> em qualquer coluna para ver a orientação oficial de preenchim
             <th>Suficiência<br>estoque</th>
             <th><div class="th-flex">Suficiência<br>pedido<span class="hint" tabindex="0" data-tip="Indicador independente do semáforo de ruptura: fica verde quando a quantidade solicitada (programação sugerida) cobre a necessidade calculada do período futuro sem sobra relevante; fica âmbar quando o pedido excede a quantidade necessária em uma embalagem inteira ou mais; fica vermelho quando fica abaixo dela.">i</span></div></th>
             <th><div class="th-flex"><span class="field-num optional">11</span>Item em<br>falta<span class="hint" tabindex="0" data-tip="Marque apenas quando o item está com estoque totalmente zerado (ruptura). Como não há estoque nem consumo recente para calcular automaticamente, marcar esta caixa classifica o item como risco de desabastecimento mesmo com os campos de consumo/estoque em 0, evitando que ele seja tratado como 'Sem dados'. Depois de marcar, informe manualmente a quantidade a pedir no campo 21 (Programação de ajuste).">i</span></div></th>
-            <th style="min-width:130px;">item(ns)</th>
+            <th class="col-nome" style="min-width:130px;">item(ns)</th>
             <th>Código SIGAF</th>
             <th><div class="th-flex"><span class="field-num">12</span>Quantidade por embalagem (un)<span class="hint" tabindex="0" data-tip="Quantidade por embalagem: quantidade de unidades farmacêuticas contida em cada
 embalagem do medicamento/produto no SIGAF. Confirme o valor correto para cada
@@ -2521,10 +2550,28 @@ const items = [
     manualOverride[key] = false;
     tbody.appendChild(buildRowI(item));
     tbody.appendChild(buildMemoRow(item));
+    ordenarItensAlfabeticamente();
     emptyRowI.style.display = 'none';
     updateContagemAdicionados();
     recalc();
     scheduleAutosave();
+  }
+
+  // Mantém a lista de itens adicionados sempre em ordem alfabética (pt-BR),
+  // tanto em selectedKeys (usado no autosave/backup) quanto nas linhas da
+  // tabela — que são a fonte da exportação em CSV. Cada linha de item é
+  // reposicionada junto com a sua linha de "Memória de cálculo".
+  function ordenarItensAlfabeticamente(){
+    const nome = k=> (itemsByKey[k] && itemsByKey[k].name) || '';
+    selectedKeys.sort((a,b)=> nome(a).localeCompare(nome(b),'pt-BR',{sensitivity:'base', numeric:true}));
+    const frag = document.createDocumentFragment();
+    selectedKeys.forEach(k=>{
+      const rowI = tbody.querySelector(`tr[data-key="${k}"]`);
+      const memoRow = tbody.querySelector(`tr.calc-memo-row[data-memo-row-key="${k}"]`);
+      if(rowI) frag.appendChild(rowI);
+      if(memoRow) frag.appendChild(memoRow);
+    });
+    tbody.appendChild(frag);
   }
 
   function removeItem(key){
