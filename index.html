@@ -432,6 +432,8 @@ transparent 60%);
     line-height:1;
   }
   .field-num.optional{ background:var(--ink-soft); }
+  /* numeração com subitem (ex.: 2.1) — vira uma pílula para caber o texto */
+  .field-num.sub{ width:auto; min-width:19px; padding:0 5px; border-radius:10px; }
   th .field-num{
     background:var(--sage-deep);
     color:var(--white);
@@ -1592,6 +1594,15 @@ Cadastro Nacional de Estabelecimentos de Saúde (CNES), com 7 dígitos. É o có
             <input type="text" id="estabNome" placeholder="Nome do estabelecimento de saúde" autocomplete="off">
             <div class="field-error" id="estabNomeError">Informe o nome completo do estabelecimento.</div>
           </div>
+          <div class="field">
+            <label><span class="field-num sub">2.1</span>Município
+              <span class="hint" tabindex="0" data-tip="Informe o município onde o
+estabelecimento está localizado. O nome do município é usado no início do nome
+de todos os arquivos exportados.">i</span>
+            </label>
+            <input type="text" id="estabMunicipio" placeholder="Nome do município" autocomplete="off">
+            <div class="field-error" id="estabMunicipioError">Informe o nome do município.</div>
+          </div>
         </div>
       </div>
       <div class="subsection">
@@ -1811,9 +1822,9 @@ prazo de validade para cada item.">i</span></div></th>
 
             <th><div class="th-flex"><span class="field-num optional">17</span>Quantitativo reservado para outros programas (un)<span
 class="hint" tabindex="0" data-tip="Preencher apenas se o item for comum a
-outros programas (ex: agulhas utilizadas no CEAF e no CEAF). Informe a
+outros programas (ex: agulhas utilizadas no CEAF e em outro programa). Informe a
 quantidade, já contabilizada no estoque disponível, destinada a outro programa
-que não o de Diabetes/CEAF. Se não for o caso, deixe em 0.">i</span></div></th>
+que não o CEAF. Se não for o caso, deixe em 0.">i</span></div></th>
 
             <th><div class="th-flex"><span class="field-num optional">18</span>Quantitativo com vencimento próximo, sem previsão de uso (un)<span
 class="hint" tabindex="0" data-tip="Preencher apenas se parte do estoque
@@ -2793,6 +2804,7 @@ const items = [
   const dataEntregaAmb = document.getElementById('dataEntregaAmb');
   const estabCnes = document.getElementById('estabCnes');
   const estabNome = document.getElementById('estabNome');
+  const estabMunicipio = document.getElementById('estabMunicipio');
   const estabResponsavel = document.getElementById('estabResponsavel');
   const estabEmail = document.getElementById('estabEmail');
   const estabTelefone = document.getElementById('estabTelefone');
@@ -2864,6 +2876,9 @@ const items = [
   function validarNome(){
     return validarCampoEstab(estabNome, estabNome.value.trim() === '' || estabNome.value.trim().length >= 3);
   }
+  function validarMunicipio(){
+    return validarCampoEstab(estabMunicipio, estabMunicipio.value.trim() === '' || estabMunicipio.value.trim().length >= 2);
+  }
   function validarResponsavel(){
     return validarCampoEstab(estabResponsavel, estabResponsavel.value.trim() === '' || estabResponsavel.value.trim().length >= 3);
   }
@@ -2879,17 +2894,19 @@ const items = [
   function validarEstabelecimento(){
     const okCnes = validarCnes();
     const okNome = validarNome();
+    const okMun = validarMunicipio();
     const okResp = validarResponsavel();
     const okEmail = validarEmail();
     const okTel = validarTelefone();
-    return okCnes && okNome && okResp && okEmail && okTel;
+    return okCnes && okNome && okMun && okResp && okEmail && okTel;
   }
   estabCnes.addEventListener('blur', validarCnes);
   estabNome.addEventListener('blur', validarNome);
+  estabMunicipio.addEventListener('blur', validarMunicipio);
   estabResponsavel.addEventListener('blur', validarResponsavel);
   estabEmail.addEventListener('blur', validarEmail);
   estabTelefone.addEventListener('blur', validarTelefone);
-  [estabCnes, estabNome, estabResponsavel, estabEmail, estabTelefone].forEach(inp=>{
+  [estabCnes, estabNome, estabMunicipio, estabResponsavel, estabEmail, estabTelefone].forEach(inp=>{
     inp.addEventListener('input', ()=> inp.closest('.field').classList.remove('invalid'));
   });
 
@@ -3284,6 +3301,27 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
     recalc();
     scheduleAutosave();
   });
+  // ---- Padrão de nome dos arquivos exportados ----
+  // Município.CNES.Data de Análise do Estoque.nome do arquivo
+  // Ex.: "Belo Horizonte.1234567.29-09-2026.programacao-ceaf.csv"
+  // Caracteres proibidos em nomes de arquivo (\ / : * ? " < > |) são
+  // removidos; campos vazios recebem um marcador para manter o padrão.
+  function limparParteNome(v){
+    return String(v || '')
+      .replace(/[\\/:*?"<>|\u0000-\u001f]/g, '')
+      .replace(/\./g, '')          // o ponto é o separador do padrão
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+  function nomeArquivoPadrao(nomeBase, extensao){
+    const municipio = limparParteNome(estabMunicipio.value) || 'SemMunicipio';
+    const cnes = limparParteNome(estabCnes.value) || 'SemCNES';
+    const iso = dataAnalise.value || hojeISO();
+    const [a, m, d] = iso.split('-');
+    const data = `${d}-${m}-${a}`;
+    return `${municipio}.${cnes}.${data}.${nomeBase}${extensao ? '.' + extensao : ''}`;
+  }
+
   document.getElementById('btnPrint').addEventListener('click', ()=>{
     // Antes de imprimir/exportar, cancela o debounce do autosave e salva
     // imediatamente o estado atual, e força um recálculo síncrono. Sem
@@ -3296,7 +3334,17 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
     clearTimeout(autosaveTimer);
     doSave();
     recalc();
+    // O navegador usa o título da página como nome sugerido do PDF ao
+    // "Salvar como PDF"; troca-o temporariamente para seguir o padrão.
+    const tituloOriginal = document.title;
+    document.title = nomeArquivoPadrao('relatorio-programacao-ceaf', '');
+    const restaurarTitulo = ()=>{
+      document.title = tituloOriginal;
+      window.removeEventListener('afterprint', restaurarTitulo);
+    };
+    window.addEventListener('afterprint', restaurarTitulo);
     window.print();
+    setTimeout(restaurarTitulo, 1000);
   });
 
   // ---- Exportação em CSV ----
@@ -3380,9 +3428,8 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
     const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8;'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    const dataStr = hojeISO();
     a.href = url;
-    a.download = `programacao-ceaf-${dataStr}.csv`;
+    a.download = nomeArquivoPadrao('programacao-ceaf', 'csv');
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -3398,10 +3445,7 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
   // itens cadastrados manualmente pelo usuário e todos os itens adicionados
   // com seus valores e overrides manuais.
   function nomeArquivoBackup(){
-    const d = new Date();
-    const pad = n => String(n).padStart(2,'0');
-    const carimbo = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
-    return `backup-ceaf-diabetes_${carimbo}.json`;
+    return nomeArquivoPadrao('backup-ceaf', 'json');
   }
 
   document.getElementById('btnExportBackup').addEventListener('click', ()=>{
@@ -3566,6 +3610,7 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
       savedAt: Date.now(),
       estabCnes: estabCnes.value,
       estabNome: estabNome.value,
+      estabMunicipio: estabMunicipio.value,
       estabResponsavel: estabResponsavel.value,
       estabEmail: estabEmail.value,
       estabTelefone: estabTelefone.value,
@@ -3585,6 +3630,7 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
     if(!state) return;
     if(state.estabCnes !== undefined) estabCnes.value = state.estabCnes;
     if(state.estabNome !== undefined) estabNome.value = state.estabNome;
+    if(state.estabMunicipio !== undefined) estabMunicipio.value = state.estabMunicipio;
     if(state.estabResponsavel !== undefined) estabResponsavel.value = state.estabResponsavel;
     if(state.estabEmail !== undefined) estabEmail.value = state.estabEmail;
     if(state.estabTelefone !== undefined) estabTelefone.value = state.estabTelefone;
