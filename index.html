@@ -1086,6 +1086,43 @@ transparent 60%);
     font-weight:700;
     color:var(--sage-deep);
   }
+  td select.base-select{
+    font-family:var(--sans, inherit);
+    font-size:10.5px;
+    padding:3px 2px;
+    border:1.5px solid var(--border);
+    border-radius:var(--radius-sm);
+    background:var(--white);
+    color:var(--ink);
+    min-width:168px;
+  }
+  td select.base-select:focus, td textarea.justif-input:focus{
+    outline:none;
+    border-color:var(--sage-dark);
+    box-shadow:0 0 0 3px rgba(79,169,138,0.30);
+  }
+  td select.base-select.alt{ border-color:var(--amber); background:var(--amber-bg); }
+  td input:disabled{ opacity:.4; cursor:not-allowed; }
+  td textarea.justif-input{
+    width:170px;
+    min-height:38px;
+    font-family:inherit;
+    font-size:10.5px;
+    line-height:1.3;
+    padding:4px 5px;
+    border:1.5px solid var(--border);
+    border-radius:var(--radius-sm);
+    background:var(--white);
+    color:var(--ink);
+    resize:vertical;
+  }
+  td textarea.justif-input.obrigatoria{ border-color:#B3261E; background:#FDF4F2; }
+  .resumo-justif{ font-size:11px; line-height:1.35; max-width:260px; white-space:normal; }
+  .resumo-alerta{
+    margin:14px 0 12px; padding:10px 12px; border-radius:var(--radius-sm);
+    background:#FBEAE7; color:#8C1D16; font-size:12.5px; line-height:1.4;
+  }
+  .resumo-alerta.info{ background:var(--amber-bg); color:var(--ink); }
   td input.chk-ruptura{
     width:15px;
     height:15px;
@@ -1431,6 +1468,8 @@ transparent 60%);
     }
     td input.fe-input{ width:100% !important; }
     td input.chk-ruptura{ width:14px !important; height:14px; padding:0; }
+    td select.base-select{ font-size:7px; max-width:none; border:1px solid #bbb; }
+    td textarea.justif-input{ width:100%; font-size:7px; min-height:0; border:1px solid #bbb; resize:none; }
     td.result{ font-size:7.5px; }
     .hint{ display:none; } /* ícones de ajuda só fazem sentido on-screen (hover) */
 
@@ -1798,7 +1837,7 @@ campo.">i</span> em qualquer coluna para ver a orientação oficial de preenchim
           <tr>
             <th>Suficiência<br>estoque</th>
             <th><div class="th-flex">Suficiência<br>pedido<span class="hint" tabindex="0" data-tip="Indicador independente do semáforo de ruptura: fica verde quando a quantidade solicitada (programação sugerida) cobre a necessidade calculada do período futuro sem sobra relevante; fica âmbar quando o pedido excede a quantidade necessária em uma embalagem inteira ou mais; fica vermelho quando fica abaixo dela.">i</span></div></th>
-            <th><div class="th-flex"><span class="field-num optional">11</span>Item em<br>falta<span class="hint" tabindex="0" data-tip="Marque apenas quando o item está com estoque totalmente zerado (ruptura). Como não há estoque nem consumo recente para calcular automaticamente, marcar esta caixa classifica o item como risco de desabastecimento mesmo com os campos de consumo/estoque em 0, evitando que ele seja tratado como 'Sem dados'. Depois de marcar, informe manualmente a quantidade a pedir no campo 21 (Programação de ajuste).">i</span></div></th>
+            <th><div class="th-flex"><span class="field-num optional">11</span>Item em<br>falta<span class="hint" tabindex="0" data-tip="Marque apenas quando o item está com estoque totalmente zerado (ruptura). Como não há estoque nem consumo recente para calcular automaticamente, marcar esta caixa classifica o item como risco de desabastecimento mesmo com os campos de consumo/estoque em 0, evitando que ele seja tratado como 'Sem dados'. Depois de marcar, escolha a base 'Pacientes com processo ativo' (15a) para o cálculo automático, ou informe manualmente a quantidade a pedir no campo 21 (Programação de ajuste) com justificativa (21a).">i</span></div></th>
             <th class="col-nome" style="min-width:130px;">item(ns)</th>
             <th>Código SIGAF</th>
             <th><div class="th-flex"><span class="field-num">12</span>Quantidade por embalagem (un)<span class="hint" tabindex="0" data-tip="Quantidade por embalagem: quantidade de unidades farmacêuticas contida em cada
@@ -1816,6 +1855,14 @@ tabindex="0" data-tip="Informe o consumo real do mês intermediário dos
             <th><div class="th-flex"><span class="field-num">15</span>Consumo — último mês (un)<span class="hint"
 tabindex="0" data-tip="Informe o consumo real do mês mais recente dos
 últimos 3 meses (M-1), imediatamente anterior ao mês de referência.">i</span></div></th>
+            <th><div class="th-flex"><span class="field-num sub">15a</span>Base de cálculo do consumo<span class="hint"
+tabindex="0" data-tip="Padrão: CMM dos 3 meses informados. Use outra base apenas quando o consumo registrado não representa a demanda real: 'CMM + novos deferimentos' soma pacientes deferidos recentemente que ainda não retiraram (ex.: primeira retirada neste mês); 'Pacientes com processo ativo' calcula pela quantidade de pacientes com solicitação ativa — útil para itens com distribuição parcial nos meses anteriores ou com pacientes sem retirada há mais de 90 dias, mas ainda dentro dos 180 dias antes da inativação. Qualquer base diferente do CMM gera pedido acima do cálculo de referência e exige justificativa (21a), sujeita a aprovação posterior.">i</span></div></th>
+            <th><div class="th-flex"><span class="field-num sub optional">15b</span>Novos deferimentos sem retirada (nº pacientes)<span class="hint"
+tabindex="0" data-tip="Usado somente com a base 'CMM + novos deferimentos'. Informe quantos pacientes tiveram a solicitação deferida recentemente e ainda não aparecem no consumo dos 3 meses informados.">i</span></div></th>
+            <th><div class="th-flex"><span class="field-num sub optional">15c</span>Pacientes com processo ativo (nº)<span class="hint"
+tabindex="0" data-tip="Usado somente com a base 'Pacientes com processo ativo'. Informe o total de pacientes com solicitação ativa para o item — inclusive os que estão sem retirada há até 180 dias, que pelos critérios do CEAF ainda não foram inativados e podem retirar a qualquer momento.">i</span></div></th>
+            <th><div class="th-flex"><span class="field-num sub optional">15d</span>Quantidade mensal por paciente (un)<span class="hint"
+tabindex="0" data-tip="Quantidade média, em unidades farmacêuticas, dispensada por paciente em um mês (conforme posologia autorizada). Obrigatória quando a base de cálculo não for o CMM.">i</span></div></th>
             <th><div class="th-flex"><span class="field-num">16</span>Quantitativo em estoque disponível (un)<span class="hint"
 tabindex="0" data-tip="Informe a quantidade em estoque apta para uso e dentro do
 prazo de validade para cada item.">i</span></div></th>
@@ -1844,14 +1891,18 @@ até 20% de margem, de forma criteriosa e justificada. Se não for o caso, deixe
             <th><div class="th-flex"><span class="field-num">21</span>Quantitativo da programação de ajuste (un)<span class="hint"
 tabindex="0" data-tip="Sugerido automaticamente a partir da quantidade
 
-necessária. Confira o valor e ajuste manualmente se necessário, conforme diretriz do Ministério da Saúde — este é o número final que vai para o pedido no SIGAF.">i</span></div></th>
+necessária. Confira o valor e ajuste manualmente se necessário, conforme diretriz do Ministério da Saúde — este é o número final que vai para o pedido no SIGAF. Se o valor ficar acima da quantidade calculada pelo CMM, preencha a justificativa (21a).">i</span></div></th>
+            <th><div class="th-flex"><span class="field-num sub optional">21a</span>Justificativa para pedido acima do cálculo<span class="hint"
+tabindex="0" data-tip="Obrigatória sempre que a programação sugerida ficar acima da quantidade calculada pelo CMM — seja por uso de outra base de cálculo (15a) ou por ajuste manual do campo 21. Descreva o motivo (ex.: novos deferimentos, distribuição parcial nos meses anteriores, pacientes ativos sem retirada recente). O pedido segue com a quantidade informada e fica marcado para aprovação posterior, como no Siclom.">i</span></div></th>
+            <th><div class="th-flex">Validação do pedido<span class="hint" tabindex="0" data-tip="Dentro do cálculo: programação sugerida igual ou abaixo da referência pelo CMM. Aguarda aprovação: acima da referência, com justificativa preenchida. Justificativa pendente: acima da referência, sem justificativa.">i</span></div></th>
             <th class="col-detail"><div class="th-flex">Data provável de ruptura mais próxima<span class="hint" tabindex="0" data-tip="Data final do período de cobertura vigente (Data Fim de Cobertura), calculada na primeira seção — data em que o estoque programado se esgota, caso não haja reposição.">i</span></div></th>
             <th class="col-detail"><div class="th-flex">Cobertura (dias)<span class="hint" tabindex="0" data-tip="Cobertura do período vigente, em dias corridos, calculada na primeira seção.">i</span></div></th>
             <th class="col-detail"><div class="th-flex">Quantitativo a consumir até a entrega (un)<span class="hint" tabindex="0" data-tip="Consumo estimado mensal proporcional aos dias entre a Data de Análise e a Data Prevista de Entrega correspondente à categoria do item (Termolábil ou Termoestável). Todas as datas são obrigatórias; sem a Data Prevista de Entrega específica, este valor fica zerado.">i</span></div></th>
             <th class="col-detail"><div class="th-flex">quantitativo no estoque futuro (un)<span class="hint" tabindex="0" data-tip="Estoque disponível − a consumir até a entrega − reservado − vencimento próximo + a receber.">i</span></div></th>
             <th class="col-detail"><div class="th-flex">Quantitativo do estoque de segurança (un)<span class="hint" tabindex="0" data-tip="Consumo estimado × meses de cobertura × margem de segurança (%).">i</span></div></th>
-            <th><div class="th-flex">Quantitativo de consumo estimado no mês (un)<span class="hint" tabindex="0" data-tip="Calculado automaticamente como a média dos 3 meses de consumo informados (CMM = Consumo Médio Mensal = (mês 1 + mês 2 + mês 3) ÷ 3). Este valor — e não mais um campo aberto — é usado em todas as fórmulas de programação abaixo. Os valores dos 3 meses devem ser os mesmos a serem informados no pedido do SIGAF.">i</span></div></th>
-            <th><div class="th-flex">Quantidade necessária (un)<span class="hint" tabindex="0" data-tip="(Consumo estimado × meses de cobertura) + estoque de segurança − estoque futuro.">i</span></div></th>
+            <th><div class="th-flex">Quantitativo de consumo estimado no mês (un)<span class="hint" tabindex="0" data-tip="Consumo mensal usado nas fórmulas, conforme a base de cálculo (15a). Na base padrão, é o CMM = (mês 1 + mês 2 + mês 3) ÷ 3. Com 'CMM + novos deferimentos': CMM + novos × quantidade por paciente. Com 'Pacientes com processo ativo': pacientes ativos × quantidade por paciente. Os valores dos 3 meses devem ser os mesmos a serem informados no pedido do SIGAF.">i</span></div></th>
+            <th><div class="th-flex">Quantidade necessária (un)<span class="hint" tabindex="0" data-tip="(Consumo estimado × meses de cobertura) + estoque de segurança − estoque futuro, usando a base de cálculo escolhida (15a).">i</span></div></th>
+            <th><div class="th-flex">Referência pelo CMM (un)<span class="hint" tabindex="0" data-tip="Programação que resultaria do cálculo padrão, só com o CMM dos 3 meses, já ajustada à embalagem. É o parâmetro de validação: pedidos acima deste valor exigem justificativa (21a).">i</span></div></th>
             <th><div class="th-flex">Consumo máximo (un)<span class="hint"
 tabindex="0" data-tip="Calculado automaticamente: o maior valor entre os 3
 meses de consumo informados. Não entra nas fórmulas de programação — é apenas
@@ -1865,11 +1916,11 @@ SIGAF.">i</span></div></th>
         </thead>
         <tbody id="tbodyI">
           <tr id="emptyRowI" class="empty-row">
-            <td colspan="27">Nenhum item adicionado ainda. Use a busca acima
+            <td colspan="34">Nenhum item adicionado ainda. Use a busca acima
 para adicionar os medicamentos/produtos que serão programados.</td>
           </tr>
           <tr id="noMatchRowI" class="empty-row" style="display:none;">
-            <td colspan="27">Nenhum item encontrado para esta busca.</td>
+            <td colspan="34">Nenhum item encontrado para esta busca.</td>
           </tr>
         </tbody>
       </table>
@@ -2029,12 +2080,15 @@ situação adequada.<br>Cinza: item ainda sem dados preenchidos. Clique no ícon
               <th style="min-width:200px;">item(ns)</th>
               <th>Código SIGAF</th>
               <th>Consumo máximo (un)</th>
+              <th>Referência pelo CMM (un)</th>
               <th>Quantidade a Pedir</th>
+              <th>Validação</th>
+              <th>Justificativa</th>
             </tr>
           </thead>
           <tbody id="tbodyResumo">
             <tr id="emptyRowResumo" class="empty-row">
-              <td colspan="6">Nenhum item adicionado ainda. Adicione itens na
+              <td colspan="9">Nenhum item adicionado ainda. Adicione itens na
 tabela acima para vê-los aqui.</td>
             </tr>
           </tbody>
@@ -2459,6 +2513,11 @@ const items = [
   // precisa ser sinalizado à parte e nunca pode ser tratado como "sem
   // quantidade a pedir" no Resumo do pedido (Etapa 4).
   const semHistoricoByKey = {};
+  // resultados de cálculo por item (base escolhida, referência pelo CMM,
+  // excedente sobre a referência e situação de validação), usados no
+  // Resumo do pedido e na exportação CSV
+  const calcByKey = {};
+  const BASE_LABEL = { cmm:'CMM (3 meses)', novos:'CMM + novos deferimentos', ativos:'Pacientes com processo ativo' };
 
   function buildRowI(item){
     const tr = document.createElement('tr');
@@ -2473,6 +2532,14 @@ const items = [
       <td><input type="number" min="0" value="0" data-key="${item.key}" data-col="consumoM1"></td>
       <td><input type="number" min="0" value="0" data-key="${item.key}" data-col="consumoM2"></td>
       <td><input type="number" min="0" value="0" data-key="${item.key}" data-col="consumoM3"></td>
+      <td><select class="base-select" data-key="${item.key}" data-col="base" title="Base de cálculo do consumo">
+        <option value="cmm">CMM (3 meses)</option>
+        <option value="novos">CMM + novos deferimentos</option>
+        <option value="ativos">Pacientes com processo ativo</option>
+      </select></td>
+      <td><input type="number" min="0" value="0" data-key="${item.key}" data-col="novos" disabled></td>
+      <td><input type="number" min="0" value="0" data-key="${item.key}" data-col="ativos" disabled></td>
+      <td><input type="number" min="0" value="0" data-key="${item.key}" data-col="dosePac" disabled></td>
       <td><input type="number" min="0" value="0" data-key="${item.key}" data-col="estoque"></td>
       <td><input type="number" min="0" value="0" data-key="${item.key}" data-col="reservado"></td>
       <td><input type="number" min="0" value="0" data-key="${item.key}" data-col="vencimento"></td>
@@ -2482,6 +2549,8 @@ const items = [
         <input type="number" min="0" value="0" class="editable-final" data-key="${item.key}" data-col="programacao">
         <span class="override-badge hint" tabindex="0" data-badge-key="${item.key}" data-tip="Valor ajustado manualmente pelo farmacêutico — diferente do cálculo automático." style="display:none;">✎</span>
       </div></td>
+      <td><textarea class="justif-input" data-key="${item.key}" data-col="justificativa" rows="2" placeholder="Obrigatória se acima do cálculo"></textarea></td>
+      <td class="sem-validacao"><span class="status-badge gray"><span class="dot"></span>Sem dados</span></td>
       <td class="result sem-ruptura col-detail">—</td>
       <td class="result sem-dias col-detail">0</td>
       <td class="result sem-aconsumir col-detail">0</td>
@@ -2489,6 +2558,7 @@ const items = [
       <td class="result sem-seguranca col-detail">0</td>
       <td class="result sem-cmm">0</td>
       <td class="result sem-necessaria">0</td>
+      <td class="result sem-refcmm">0</td>
       <td class="result sem-consumomax">0</td>
       <td class="result sem-sugerida">0</td>
       <td class="result sem-excedente">0</td>
@@ -2503,7 +2573,7 @@ const items = [
     memoTr.className = 'calc-memo-row';
     memoTr.dataset.memoRowKey = item.key;
     memoTr.style.display = 'none';
-    memoTr.innerHTML = `<td colspan="27"><div class="calc-memo" data-memo-content-key="${item.key}">
+    memoTr.innerHTML = `<td colspan="34"><div class="calc-memo" data-memo-content-key="${item.key}">
       <div class="memo-title">Memória de cálculo — ${item.name}</div>
       <dl></dl>
     </div></td>`;
@@ -2515,7 +2585,12 @@ const items = [
     const content = document.querySelector(`.calc-memo[data-memo-content-key="${k}"] dl`);
     if(!content) return;
     const linhas = [
-      ['Consumo médio mensal (CMM)', `(antepenúltimo mês + penúltimo mês + último mês) ÷ 3 = (${v.consumoM1} + ${v.consumoM2} + ${v.consumoM3}) ÷ 3 = <b>${v.consumo}</b>`],
+      ['Consumo médio mensal (CMM)', `(antepenúltimo mês + penúltimo mês + último mês) ÷ 3 = (${v.consumoM1} + ${v.consumoM2} + ${v.consumoM3}) ÷ 3 = <b>${v.cmm}</b>`],
+      ['Consumo considerado no cálculo', (()=>{
+        if(v.base==='novos') return `base CMM + novos deferimentos: CMM + novos × qtd./paciente = ${v.cmm} + ${v.novos} × ${v.dosePac} = <b>${v.consumo}</b>`;
+        if(v.base==='ativos') return `base pacientes com processo ativo: pacientes × qtd./paciente = ${v.ativos} × ${v.dosePac} = <b>${v.consumo}</b>`;
+        return `base CMM (padrão) = <b>${v.consumo}</b>`;
+      })()],
       ['Consumo máximo', `max(antepenúltimo mês, penúltimo mês, último mês) = max(${v.consumoM1}, ${v.consumoM2}, ${v.consumoM3}) = <b>${v.consumoMax}</b> (não entra nas fórmulas abaixo — apenas replicado no Resumo do pedido)`],
       ['A consumir até a entrega', `round(consumo ÷ 30 × dias até a entrega${v.term==='FRIO' ? ' — termolábil' : ' — termoestável'}) = round(${v.consumo} ÷ 30 × ${v.diasAteEntrega}) = <b>${v.aConsumir}</b>`],
       ['Estoque futuro', `estoque − a consumir − reservado − vencimento + a receber = ${v.estoque} − ${v.aConsumir} − ${v.reservado} − ${v.vencimento} + ${v.receber} = <b>${v.futuro}</b>`],
@@ -2525,6 +2600,10 @@ const items = [
         ? `valor ajustado manualmente pelo farmacêutico = <b>${v.programacao}</b>`
         : `= quantidade necessária = <b>${v.programacao}</b>`],
       ['Programação sugerida', `ceil(programação ÷ qtd. por embalagem) × qtd. por embalagem = ceil(${v.programacao} ÷ ${v.fe}) × ${v.fe} = <b>${v.sugerida}</b>`],
+      ['Referência pelo CMM', `mesmo cálculo usando só o CMM: necessária = ${v.necessariaCMM} → ajustada à embalagem = <b>${v.sugeridaCMM}</b>`],
+      ['Validação', v.acimaCalculo>0
+        ? `programação sugerida − referência pelo CMM = ${v.sugerida} − ${v.sugeridaCMM} = <b>${v.acimaCalculo}</b> acima do cálculo → ${v.justificada ? '<b>aguarda aprovação</b> (justificativa preenchida)' : '<b>justificativa pendente</b>'}`
+        : `programação sugerida ≤ referência pelo CMM (${v.sugerida} ≤ ${v.sugeridaCMM}) → <b>dentro do cálculo</b>`],
       ['Excedente', `max(futuro − necessária, 0) = max(${v.futuro} − ${v.necessaria}, 0) = <b>${v.excedente}</b>`],
       ['Excedente do pedido', `max(programação sugerida − quantidade necessária, 0) = max(${v.sugerida} − ${v.necessaria}, 0) = <b>${v.pedidoExcedente}</b>`],
       ['Suficiência do pedido', (()=>{
@@ -3065,8 +3144,33 @@ fmt(dF) : '—';
       const consumoM2 = getVal(`input[data-key="${k}"][data-col="consumoM2"]`);
       const consumoM3 = getVal(`input[data-key="${k}"][data-col="consumoM3"]`);
       const consumoMax = Math.max(consumoM1, consumoM2, consumoM3);
-      const consumo = Math.round((consumoM1 + consumoM2 + consumoM3) / 3);
+      const cmm = Math.round((consumoM1 + consumoM2 + consumoM3) / 3);
       consumoMaxByKey[k] = consumoMax;
+      // Base de cálculo do consumo (15a). O consumo dos últimos 90 dias nem
+      // sempre representa a demanda real no CEAF: deferimentos recentes
+      // ainda sem retirada, distribuição parcial nos meses anteriores e
+      // pacientes sem retirada há mais de 90 dias (mas ainda ativos, já que
+      // a inativação só ocorre após 180 dias) ficam de fora do CMM. Nesses
+      // casos o farmacêutico pode trocar a base; o cálculo pelo CMM continua
+      // sendo feito como referência de validação.
+      const baseSel = document.querySelector(`select[data-key="${k}"][data-col="base"]`);
+      const base = baseSel ? baseSel.value : 'cmm';
+      const novos = getVal(`input[data-key="${k}"][data-col="novos"]`);
+      const ativos = getVal(`input[data-key="${k}"][data-col="ativos"]`);
+      const dosePac = getVal(`input[data-key="${k}"][data-col="dosePac"]`);
+      if(baseSel){
+        baseSel.classList.toggle('alt', base!=='cmm');
+        const inpNovos = document.querySelector(`input[data-key="${k}"][data-col="novos"]`);
+        const inpAtivos = document.querySelector(`input[data-key="${k}"][data-col="ativos"]`);
+        const inpDose = document.querySelector(`input[data-key="${k}"][data-col="dosePac"]`);
+        if(inpNovos) inpNovos.disabled = base!=='novos';
+        if(inpAtivos) inpAtivos.disabled = base!=='ativos';
+        if(inpDose) inpDose.disabled = base==='cmm';
+      }
+      let consumo = cmm;
+      if(base==='novos') consumo = Math.round(cmm + novos*dosePac);
+      else if(base==='ativos') consumo = Math.round(ativos*dosePac);
+      const baseIncompleta = (base==='novos' && (novos<=0 || dosePac<=0)) || (base==='ativos' && (ativos<=0 || dosePac<=0));
       const estoque = getVal(`input[data-key="${k}"][data-col="estoque"]`);
       const reservado = getVal(`input[data-key="${k}"][data-col="reservado"]`);
       const vencimento = getVal(`input[data-key="${k}"][data-col="vencimento"]`);
@@ -3088,6 +3192,12 @@ receber, 0);
       const seguranca = Math.ceil(consumo * mesesCobertura * (margem/100));
       const necessaria = Math.max(Math.ceil((consumo*mesesCobertura) + seguranca
 - futuro), 0);
+      // Referência de validação: o mesmo cálculo usando apenas o CMM
+      const aConsumirCMM = Math.max(Math.round((cmm/30)*diasAteEntrega),0);
+      const futuroCMM = Math.max(estoque - aConsumirCMM - reservado - vencimento + receber, 0);
+      const segurancaCMM = Math.ceil(cmm * mesesCobertura * (margem/100));
+      const necessariaCMM = Math.max(Math.ceil((cmm*mesesCobertura) + segurancaCMM - futuroCMM), 0);
+      const sugeridaCMM = fe>0 ? Math.ceil(necessariaCMM/fe)*fe : necessariaCMM;
 
       const progInput = document.querySelector(`input[data-key="${k}"][data-col="programacao"]`);
       if(!manualOverride[k]){
@@ -3098,6 +3208,18 @@ receber, 0);
       const programacao = parseFloat(progInput.value) || 0;
       const sugerida = fe>0 ? Math.ceil(programacao/fe)*fe : programacao;
       sugeridaByKey[k] = sugerida;
+
+      // ---- Validação do pedido (acima da referência pelo CMM) ----
+      const justifEl = document.querySelector(`textarea[data-key="${k}"][data-col="justificativa"]`);
+      const justificativa = justifEl ? justifEl.value.trim() : '';
+      const acimaCalculo = Math.max(sugerida - sugeridaCMM, 0);
+      const justificada = justificativa.length > 0;
+      if(justifEl) justifEl.classList.toggle('obrigatoria', acimaCalculo>0 && !justificada);
+      let valStatus, valLabel;
+      if(acimaCalculo<=0){ valStatus='green'; valLabel='Dentro do cálculo'; }
+      else if(justificada){ valStatus='amber'; valLabel='Aguarda aprovação'; }
+      else { valStatus='red'; valLabel='Justificativa pendente'; }
+      calcByKey[k] = { base, cmm, consumo, novos, ativos, dosePac, necessariaCMM, sugeridaCMM, acimaCalculo, justificativa, justificada, valStatus, valLabel };
 
       // ---- Semáforo de status ----
       const excedente = Math.max(futuro - necessaria, 0);
@@ -3121,7 +3243,7 @@ receber, 0);
         // ainda não preenchida — e por causa disso a Quantidade necessária e
         // a Programação sugerida saíam zeradas, sinalizando "não pedir" para
         // um item que na verdade precisa ser pedido com urgência.
-        const semNoData = !ruptura && consumo===0 && estoque===0 && programacao===0;
+        const semNoData = !ruptura && consumo===0 && estoque===0 && programacao===0 && base==='cmm';
         semRow.dataset.semDados = semNoData ? '0' : '1';
         let status, label;
         if(semNoData){
@@ -3143,7 +3265,9 @@ receber, 0);
         const inconsistente = (reservado + vencimento) > estoque;
         semRow.classList.toggle('row-inconsistente', inconsistente);
         const semHistorico = ruptura && consumo===0;
-        const warningHTML = inconsistente
+        const warningHTML = baseIncompleta
+          ? `<span class="row-warning hint" tabindex="0" data-tip="Base de cálculo '${BASE_LABEL[base]}' selecionada, mas ${base==='novos' ? 'o nº de novos deferimentos' : 'o nº de pacientes com processo ativo'} e/ou a quantidade mensal por paciente estão em 0. Preencha os campos 15b–15d.">⚠</span>`
+          : inconsistente
           ? `<span class="row-warning hint" tabindex="0" data-tip="Inconsistência: Reservado (${reservado}) + Vencimento próximo (${vencimento}) excede o Estoque disponível informado (${estoque}). Revise os valores.">⚠</span>`
           : semHistorico
           ? `<span class="row-warning hint" tabindex="0" data-tip="Item em ruptura sem consumo registrado nos últimos 3 meses: não há como calcular automaticamente a quantidade necessária. A Programação de ajuste ficará em 0 até você preencher manualmente a quantidade a pedir nesse campo.">⚠</span>`
@@ -3158,6 +3282,13 @@ receber, 0);
         setText(semRow.querySelector('.sem-seguranca'), seguranca);
         setText(semRow.querySelector('.sem-cmm'), consumo);
         setText(semRow.querySelector('.sem-necessaria'), necessaria);
+        setText(semRow.querySelector('.sem-refcmm'), sugeridaCMM);
+        const valCell = semRow.querySelector('.sem-validacao');
+        if(valCell){
+          const vs = semNoData ? 'gray' : valStatus, vl = semNoData ? 'Sem dados' : valLabel;
+          valCell.innerHTML = `<span class="status-badge ${vs}"><span class="dot"></span>${vl}</span>`;
+          if(semNoData){ calcByKey[k].valStatus='gray'; calcByKey[k].valLabel='Sem dados'; }
+        }
         setText(semRow.querySelector('.sem-consumomax'), consumoMax);
         setText(semRow.querySelector('.sem-sugerida'), sugerida);
         setText(semRow.querySelector('.sem-excedente'), excedente);
@@ -3200,7 +3331,8 @@ receber, 0);
       }
 
       renderMemo(k, {
-        consumo, consumoM1, consumoM2, consumoM3, consumoMax, estoque, reservado, vencimento, receber, margem, fe,
+        consumo, cmm, base, novos, ativos, dosePac, necessariaCMM, sugeridaCMM, acimaCalculo, justificada,
+        consumoM1, consumoM2, consumoM3, consumoMax, estoque, reservado, vencimento, receber, margem, fe,
         diasAteEntrega, term: item ? item.term : 'AMB', mesesCobertura, aConsumir, futuro, seguranca,
         necessaria, programacao, sugerida, excedente, pedidoExcedente,
         manual: !!manualOverride[k]
@@ -3220,6 +3352,9 @@ receber, 0);
     renderResumoPedido();
   }
 
+  function escapeHTML(t){
+    return String(t).replace(/[&<>"']/g, ch=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
   // ---- Resumo enxuto para lançamento no SIGAF ----
   function renderResumoPedido(){
     const resumoBody = document.getElementById('tbodyResumo');
@@ -3232,9 +3367,30 @@ receber, 0);
     // filtro de quantidade e desapareciam do Resumo (e do PDF) mesmo estando
     // com estoque zerado.
     const chavesComQtd = selectedKeys.filter(k=> (sugeridaByKey[k] || 0) >= 1 || semHistoricoByKey[k]);
+    // Aviso sobre itens acima do cálculo de referência (CMM)
+    let alertaResumo = document.getElementById('resumoAlerta');
+    if(!alertaResumo){
+      alertaResumo = document.createElement('div');
+      alertaResumo.id = 'resumoAlerta';
+      const scroll = document.querySelector('.resumo-scroll');
+      scroll.parentNode.insertBefore(alertaResumo, scroll);
+    }
+    const acima = chavesComQtd.filter(k=> calcByKey[k] && calcByKey[k].acimaCalculo>0);
+    const pendentes = acima.filter(k=> !calcByKey[k].justificada);
+    if(pendentes.length){
+      alertaResumo.className = 'resumo-alerta';
+      alertaResumo.textContent = `${pendentes.length} ${pendentes.length===1 ? 'item está' : 'itens estão'} acima da referência pelo CMM sem justificativa. Preencha o campo 21a antes de lançar o pedido.`;
+      alertaResumo.style.display = '';
+    } else if(acima.length){
+      alertaResumo.className = 'resumo-alerta info';
+      alertaResumo.textContent = `${acima.length} ${acima.length===1 ? 'item está' : 'itens estão'} acima da referência pelo CMM, com justificativa — sujeito${acima.length===1 ? '' : 's'} a aprovação posterior.`;
+      alertaResumo.style.display = '';
+    } else {
+      alertaResumo.style.display = 'none';
+    }
     if(chavesComQtd.length===0){
       resumoBody.innerHTML = `<tr id="emptyRowResumo" class="empty-row">
-        <td colspan="6">Nenhum item com quantidade sugerida maior ou igual a 1, nem em ruptura sem histórico de consumo.
+        <td colspan="9">Nenhum item com quantidade sugerida maior ou igual a 1, nem em ruptura sem histórico de consumo.
 Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
       resumoContagem.textContent = '';
       return;
@@ -3247,6 +3403,7 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
       const consumoMax = consumoMaxByKey[k] || 0;
       const st = statusByKey[k] || { status:'gray', label:'Sem dados' };
       const suf = suficienciaByKey[k] || { status:'gray', label:'Sem dados' };
+      const c = calcByKey[k] || {};
       // Sinaliza visualmente a quantidade "0" quando ela não reflete um
       // pedido zerado de verdade, e sim a impossibilidade de calcular
       // automaticamente (ruptura sem histórico de consumo) — evita que o
@@ -3261,10 +3418,13 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
         <td class="name">${item.name}</td>
         <td class="code">${item.code ? item.code : '—'}</td>
         <td class="qtd">${consumoMax}</td>
+        <td class="qtd">${c.sugeridaCMM !== undefined ? c.sugeridaCMM : '—'}</td>
         <td class="qtd">${qtdCell}</td>
+        <td><span class="status-badge ${c.valStatus||'gray'}"><span class="dot"></span>${c.valLabel||'Sem dados'}</span>${c.acimaCalculo>0 ? `<div style="font-size:11px;margin-top:3px;">+${c.acimaCalculo} un · base: ${BASE_LABEL[c.base]}</div>` : ''}</td>
+        <td class="resumo-justif">${c.justificativa ? escapeHTML(c.justificativa) : '—'}</td>
       </tr>`;
     }).join('');
-    resumoContagem.textContent = `${chavesComQtd.length} ${chavesComQtd.length===1 ? 'item para lançar' : 'itens para lançar'}`;
+    resumoContagem.textContent = `${chavesComQtd.length} ${chavesComQtd.length===1 ? 'item para lançar' : 'itens para lançar'}` + (acima.length ? ` · ${acima.length} acima do cálculo` : '');
   }
 
   document.addEventListener('input', (e)=>{
@@ -3277,7 +3437,7 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
   // Checkboxes nem sempre disparam 'input' de forma consistente em todos os
   // navegadores — garante o recálculo também via 'change'.
   document.addEventListener('change', (e)=>{
-    if(e.target.matches('input[data-col="ruptura"]')){
+    if(e.target.matches('input[data-col="ruptura"], select[data-col="base"]')){
       recalc();
       scheduleAutosave();
     }
@@ -3296,6 +3456,8 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
         inp.value = 0;
       }
     });
+    document.querySelectorAll('#tbodyI select[data-col="base"]').forEach(sel=> sel.value='cmm');
+    document.querySelectorAll('#tbodyI textarea[data-col="justificativa"]').forEach(t=> t.value='');
     filtroSemaforo.value = '';
     Object.keys(manualOverride).forEach(k=> manualOverride[k]=false);
     recalc();
@@ -3366,14 +3528,16 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
     const cabecalho = [
       'Suficiência estoque','Suficiência pedido','Item','Categoria térmica','Código SIGAF','Quantidade por embalagem (un)',
       'Consumo — antepenúltimo mês (un)','Consumo — penúltimo mês (un)','Consumo — último mês (un)',
+      'Base de cálculo do consumo','Novos deferimentos sem retirada (nº)','Pacientes com processo ativo (nº)','Quantidade mensal por paciente (un)',
       'Estoque disponível (un)',
       'Reservado para outros programas (un)','Vencimento próximo (un)',
       'A receber (un)','Margem de segurança (%)','Programação de ajuste (un)',
       'Data provável de ruptura mais próxima','Cobertura (dias)',
       'A consumir até a entrega (un)','Estoque futuro (un)',
-      'Estoque de segurança (un)','Consumo estimado no mês - CMM (un)','Quantidade necessária (un)','Consumo máximo (un)',
+      'Estoque de segurança (un)','CMM - 3 meses (un)','Consumo considerado no mês (un)','Quantidade necessária (un)','Consumo máximo (un)',
       'Programação sugerida (ajuste à embalagem) (un)','Quantidade excedente (un)',
-      'Quantidade excedente do pedido (un)'
+      'Quantidade excedente do pedido (un)',
+      'Referência pelo CMM (un)','Acima do cálculo (un)','Validação do pedido','Justificativa'
     ];
 
     const linhas = [cabecalho];
@@ -3391,6 +3555,7 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
       };
       const badge = tr.querySelector('.sem-status .status-badge');
       const status = badge ? badge.textContent.trim() : '';
+      const c = calcByKey[key] || {};
       const sufBadge = tr.querySelector('.sem-suficiencia .status-badge');
       const suficiencia = sufBadge ? sufBadge.textContent.trim() : '';
 
@@ -3404,6 +3569,10 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
         getVal('consumoM1'),
         getVal('consumoM2'),
         getVal('consumoM3'),
+        c.base ? BASE_LABEL[c.base] : '',
+        getVal('novos'),
+        getVal('ativos'),
+        getVal('dosePac'),
         getVal('estoque'),
         getVal('reservado'),
         getVal('vencimento'),
@@ -3415,12 +3584,17 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
         getResult('sem-aconsumir'),
         getResult('sem-futuro'),
         getResult('sem-seguranca'),
+        c.cmm !== undefined ? c.cmm : '',
         getResult('sem-cmm'),
         getResult('sem-necessaria'),
         getResult('sem-consumomax'),
         getResult('sem-sugerida'),
         getResult('sem-excedente'),
         Math.max((parseFloat(getResult('sem-sugerida'))||0) - (parseFloat(getResult('sem-necessaria'))||0), 0),
+        c.sugeridaCMM !== undefined ? c.sugeridaCMM : '',
+        c.acimaCalculo !== undefined ? c.acimaCalculo : '',
+        c.valLabel || '',
+        c.justificativa || '',
       ]);
     });
 
@@ -3589,6 +3763,11 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
       consumoM1: campo(k,'consumoM1'),
       consumoM2: campo(k,'consumoM2'),
       consumoM3: campo(k,'consumoM3'),
+      base: (document.querySelector(`select[data-key="${k}"][data-col="base"]`)||{}).value || 'cmm',
+      novos: campo(k,'novos'),
+      ativos: campo(k,'ativos'),
+      dosePac: campo(k,'dosePac'),
+      justificativa: (document.querySelector(`textarea[data-key="${k}"][data-col="justificativa"]`)||{}).value || '',
       estoque: campo(k,'estoque'),
       reservado: campo(k,'reservado'),
       vencimento: campo(k,'vencimento'),
@@ -3669,7 +3848,11 @@ Adicione ou ajuste itens na tabela acima para vê-los aqui.</td></tr>`;
     (state.items || []).forEach(it=>{
       if(!it || !itemsByKey[it.key]) return;
       addItem(it.key);
-      ['fe','consumoM1','consumoM2','consumoM3','estoque','reservado','vencimento','receber','margem','programacao'].forEach(col=>{
+      const selBase = document.querySelector(`select[data-key="${it.key}"][data-col="base"]`);
+      if(selBase && ['cmm','novos','ativos'].includes(it.base)) selBase.value = it.base;
+      const txtJust = document.querySelector(`textarea[data-key="${it.key}"][data-col="justificativa"]`);
+      if(txtJust && typeof it.justificativa === 'string') txtJust.value = it.justificativa;
+      ['fe','consumoM1','consumoM2','consumoM3','novos','ativos','dosePac','estoque','reservado','vencimento','receber','margem','programacao'].forEach(col=>{
         if(it[col] === undefined) return;
         const inp = document.querySelector(`input[data-key="${it.key}"][data-col="${col}"]`);
         if(inp) inp.value = it[col];
